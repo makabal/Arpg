@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerAnimator : MonoBehaviour
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
+    private static readonly int AttackHash = Animator.StringToHash("Attack");
     
     private PlayerInputHandler _input;
     private Animator _animator;
@@ -20,6 +21,10 @@ public class PlayerAnimator : MonoBehaviour
         _animator.SetFloat(SpeedHash, _input.MoveInput.sqrMagnitude);
     }
 
+    public void PlayAttackAnimation()
+    {
+        _animator.SetTrigger(AttackHash);
+    }
 
     // Start is called before the first frame update
     void Start()
