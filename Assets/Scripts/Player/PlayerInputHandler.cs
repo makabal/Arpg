@@ -1,32 +1,25 @@
+using System;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class PlayerInputHandler : MonoBehaviour
+public sealed class PlayerInputHandler : IDisposable
 {
-    private NewActions _actions;
-    
-    public Vector2 MoveInput=> _actions.player.Move.ReadValue<Vector2>();
-    public bool AttackPressedThisFrame => _actions.player.Attack.WasPressedThisFrame();
-    
-    void Awake()
-    {
-        _actions = new NewActions();
-    }
+    private readonly NewActions _actions = new NewActions();
 
-    void OnEnable()
+    public Vector2 MoveInput => _actions.player.Move.ReadValue<Vector2>();
+    public bool AttackPressedThisFrame => _actions.player.Attack.WasPressedThisFrame();
+
+    public void Enable()
     {
         _actions.player.Enable();
     }
 
-    
-    void OnDisable()
+    public void Disable()
     {
         _actions.player.Disable();
     }
 
-    void OnDestroy()
+    public void Dispose()
     {
         _actions.Dispose();
     }
-
 }

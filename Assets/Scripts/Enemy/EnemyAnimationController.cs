@@ -1,14 +1,14 @@
 using UnityEngine;
 
-public class EnemyAnimationController : MonoBehaviour
+public sealed class EnemyAnimationController
 {
     private static readonly int HitHash = Animator.StringToHash("Hit");
 
-    private Animator _animator;
+    private readonly Animator _animator;
 
-    private void Awake()
+    public EnemyAnimationController(Animator animator)
     {
-        _animator = GetComponent<Animator>();
+        _animator = animator;
     }
 
     public void PlayHitAnimation()

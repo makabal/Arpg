@@ -1,71 +1,61 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerCombat : MonoBehaviour
+public sealed class PlayerCombat
 {
-    [Header("攻击范围")]
-    [SerializeField] private Transform attackPoint;
-    [SerializeField] private float attackRadius = 0.8f;
-    [SerializeField] private LayerMask enemyLayer;
-    
-    private PlayerInputHandler _input;
-    private PlayerAnimator _playerAnimator;
-    private bool _isAttacking;
-    
-    private void Awake()
+    private readonly Transform _owner;
+    private readonly Transform _attackPoint;
+    private readonly float _attackRadius;
+    private readonly LayerMask _enemyLayer;
+    private readonly int _attackDamage;
+
+    public PlayerCombat(
+        Transform owner,
+        Transform attackPoint,
+        float attackRadius,
+        LayerMask enemyLayer,
+        int attackDamage)
     {
-        _input = GetComponent<PlayerInputHandler>();
-        _playerAnimator = GetComponent<PlayerAnimator>();
+        _owner = owner;
+        _attackPoint = attackPoint;
+        _attackRadius = attackRadius;
+        _enemyLayer = enemyLayer;
+        _attackDamage = attackDamage;
     }
-    
-    private void Update()
-    {
-        if (_input.AttackPressedThisFrame && !_isAttacking)
-        {
-            StartAttack();
-        }
-    }
-    
-    private void StartAttack()
-    {
-        _isAttacking = true;
-        _playerAnimator.PlayAttackAnimation();
-    }
-    
+
     public void AttackHit()
     {
+        if (_attackPoint == null)
+            return;
+
         Collider2D[] targets = Physics2D.OverlapCircleAll(
-            attackPoint.position,
-            attackRadius,
-            enemyLayer);
+            _attackPoint.position,
+            _attackRadius,
+            _enemyLayer);
+
+        var damagedTargets = new HashSet<IDamageable>();
 
         foreach (Collider2D target in targets)
         {
             float targetX = target.bounds.center.x;
-            float playerX = transform.position.x;
+            float attackPointX = _attackPoint.position.x;
+            bool facingRight = _owner.localScale.x > 0f;
+            bool attackPointHasNotPassedTarget = facingRight
+                ? attackPointX <= targetX
+                : attackPointX >= targetX;
 
-            bool facingRight = transform.localScale.x > 0;
-            bool targetInFront = facingRight
-                ? targetX > playerX
-                : targetX < playerX;
-
-            if (!targetInFront)
+            if (!attackPointHasNotPassedTarget)
                 continue;
 
-            EnemyAnimationController enemyAnimator =
-                target.GetComponentInParent<EnemyAnimationController>();
-
-            if (enemyAnimator != null)
+            MonoBehaviour[] behaviours = target.GetComponentsInParent<MonoBehaviour>();
+            foreach (MonoBehaviour behaviour in behaviours)
             {
-                enemyAnimator.PlayHitAnimation();
+                if (behaviour is IDamageable damageable && damagedTargets.Add(damageable))
+                {
+                    damageable.TakeDamage(_attackDamage);
+                    break;
+                }
             }
         }
     }
-    
-    public void EndAttack()
-    {
-        _isAttacking = false;
-    }
-    
 }

@@ -170,7 +170,7 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""1fcb48bd-09e1-4139-bc01-c0aad3bfe35f"",
-                    ""path"": ""<Mouse>/leftButton"",
+                    ""path"": ""<Keyboard>/1"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

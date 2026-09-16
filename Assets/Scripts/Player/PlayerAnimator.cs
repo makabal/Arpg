@@ -1,37 +1,24 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerAnimator : MonoBehaviour
+public sealed class PlayerAnimator
 {
     private static readonly int SpeedHash = Animator.StringToHash("Speed");
     private static readonly int AttackHash = Animator.StringToHash("Attack");
-    
-    private PlayerInputHandler _input;
-    private Animator _animator;
 
-    void Awake()
+    private readonly Animator _animator;
+
+    public PlayerAnimator(Animator animator)
     {
-        _input    = GetComponent<PlayerInputHandler>();
-        _animator = GetComponentInChildren<Animator>();
+        _animator = animator;
     }
-    
-    void Update()
+
+    public void SetMoveSpeed(Vector2 moveInput)
     {
-        _animator.SetFloat(SpeedHash, _input.MoveInput.sqrMagnitude);
+        _animator.SetFloat(SpeedHash, moveInput.sqrMagnitude);
     }
 
     public void PlayAttackAnimation()
     {
         _animator.SetTrigger(AttackHash);
     }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-
 }

@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &12623991652614862
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8929528293456478456}
+  m_Layer: 0
+  m_Name: SortPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8929528293456478456
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 12623991652614862}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.094, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6144253555193029277}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4756971344143800891
 GameObject:
   m_ObjectHideFlags: 0
@@ -80,6 +111,7 @@ GameObject:
   - component: {fileID: 7712546138252402666}
   - component: {fileID: 2833706555725472452}
   - component: {fileID: -1537836242342324567}
+  - component: {fileID: -1428228978963196198}
   m_Layer: 0
   m_Name: TrainingDummy
   m_TagString: Untagged
@@ -96,11 +128,12 @@ Transform:
   m_GameObject: {fileID: 7575114769093431459}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 12.09, y: -2.22, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 11.4398, y: -2.285, z: 0}
+  m_LocalScale: {x: 0.6748858, y: 0.6748858, z: 0.6748858}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 9216916685719385267}
+  - {fileID: 8929528293456478456}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &8019636647854819400
@@ -123,7 +156,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -208,7 +241,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.0051350594, y: 0.5470931}
+  m_Offset: {x: 0.005134374, y: 0.5470931}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.05}
@@ -219,7 +252,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 2.141179, y: 0.8985423}
+  m_Size: {x: 1.2156587, y: 0.8985423}
   m_EdgeRadius: 0
 --- !u!114 &-1537836242342324567
 MonoBehaviour:
@@ -230,6 +263,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 7575114769093431459}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4f7bd46f6f61440fb4544627f07517e7, type: 3}
+  m_Script: {fileID: 11500000, guid: 5eeff8d07d3a4cc2b5b18fcae4ec5588, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  displayName: TrainingDummy
+  healthMode: 1
+  maxHealth: 100
+--- !u!114 &-1428228978963196198
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7575114769093431459}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3abfbd3e165489a41b7dd6ae4c7abf2f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetRenderer: {fileID: 8019636647854819400}
+  sortPoint: {fileID: 8929528293456478456}
+  precision: 100
+  orderOffset: 0
