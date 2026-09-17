@@ -1,344 +1,306 @@
-# ARPG 项目进度记录
+# ARPG 项目开发记录
 
-> 本文档是仓库唯一的项目说明与进度记录。它用于集中记录当前功能、设计边界、操作方式、待办事项和验收状态。
-
-## 项目信息
-
-- 项目类型：2D 像素俯视角 ARPG
-- Unity 版本：2022.3.62f3c1
-- 渲染管线：Universal Render Pipeline 14.0.12，2D Renderer
-- 资源管理：YooAsset 3.0.5（已安装，资源包规则尚未配置）
-- 当前场景：`Assets/Scenes/TrainingGround.unity`
-- 当前分支：`main`
-- 最近更新：2026-09-17
-
-## 常用工具与参考网站
-
-- [AI FPS](https://aifps.top/index)：AI 工具导航与资源入口，用户推荐保留。
+我正在制作一款 2D 像素俯视角 ARPG。本文件用于梳理我的开发流程，并记录各个功能板块的实现思路、完成情况和后续工作。
 
 ## 当前阶段
 
-训练场核心战斗闭环已经形成：玩家可以移动、普通攻击和持续引导剑刃风暴，训练木桩能够接收伤害并播放反馈，玩家和目标状态可通过 HUD 查看，鼠标选择会显示描边，单位之间按照脚底 Y 坐标形成伪 3D 前后遮挡。
+我已经完成训练场的基础战斗闭环，包括玩家移动、普通攻击、目标选择、角色 HUD 和组合式技能框架。目前正在完善第一个持续技能“剑刃风暴”，下一阶段会把已经整理好的技能栏和世界范围指示器接入游戏。
 
-当前工作重点是完整验收剑刃风暴的起手、持续、收尾和范围伤害流程，将已经整理好的技能栏/世界指示器素材接入运行时 UI，然后继续地图碰撞、相机与训练完成流程。
+当前开发环境：
 
-## 当前操作
+- Unity 2022.3.62f3c1
+- Universal Render Pipeline 14.0.12
+- Input System 1.14.2
+- TextMesh Pro 3.0.7
+- YooAsset 3.0.5
+- 当前测试场景：`Assets/Scenes/TrainingGround.unity`
 
-| 操作 | 输入 |
+当前操作：
+
+| 功能 | 输入 |
 |---|---|
 | 移动 | `WASD` |
 | 普通攻击 | 数字键 `1` |
-| 剑刃风暴 | 按住数字键 `2`，松开后结束 |
-| 选择敌人 | 鼠标左键点击敌人 |
-| 取消选择 | 鼠标左键点击场景空白处 |
+| 剑刃风暴 | 按住数字键 `2`，松开结束 |
+| 选择/取消目标 | 鼠标左键点击目标或空白区域 |
 
-## 运行项目
-
-1. 使用 Unity `2022.3.62f3c1` 打开仓库。
-2. 打开 `Assets/Scenes/TrainingGround.unity`。
-3. 进入 Play Mode。
-4. 点击训练木桩查看描边和固定位置目标血条。
-5. 使用数字键 `1` 攻击木桩。
-6. 按住数字键 `2`，验证剑刃风暴起手完成后进入循环、持续耗蓝和重复伤害，松开后播放收尾。
-7. 从木桩上方和下方经过，检查伪 3D 遮挡关系。
-
-## 已完成功能
-
-### 场景与角色
-
-- [x] 创建正式训练场场景并加入 Build Settings
-- [x] 搭建地面与围栏 Tilemap
-- [x] 配置 Main Camera、Global Light 2D 和 Cinemachine 跟随
-- [x] 创建玩家与训练木桩 Prefab
-- [x] 配置 Rigidbody2D、Collider2D、SpriteRenderer 和 Animator
-- [x] 实现 WASD 二维移动和左右朝向翻转
-- [x] 实现 Idle、Run、Attack 和 Hit 动画切换
-- [x] 使用脚底 `SortPoint` 动态计算 `Order in Layer`
-
-### 属性与运行时数据
-
-- [x] 使用 `CharacterStatsData` ScriptableObject 保存玩家基础模板
-- [x] 玩家运行时创建独立的 `Health` 和 `ResourcePool`
-- [x] 使用事件通知 UI 生命和资源变化
-- [x] 使用 `IDamageable` 提供统一伤害入口
-- [x] 支持普通生命和无限生命两种模式
-
-当前数据边界：
-
-- ScriptableObject 只保存基础配置，不记录当局变化。
-- `Health`、`ResourcePool` 和状态机保存当前运行时状态。
-- 训练木桩使用 `HealthMode.Infinite`，受击时触发反馈但不会死亡。
-- 永久成长和存档尚未实现；后续应使用独立的可序列化存档 DTO，而不是在运行时修改 SO 资源。
-
-### 状态机与代码结构
-
-- [x] 创建可复用的泛型状态机
-- [x] 玩家拆分为 Normal、Skill、Dead 状态
-- [x] 敌人拆分为 Idle、Hit 状态
-- [x] `PlayerManager` 统一组装输入、移动、动画和战斗对象
-- [x] `EnemyManager` 统一持有敌人属性、动画和状态机
-
-### 普通攻击
-
-- [x] 使用新版 Input System
-- [x] 将攻击输入设置为数字键 `1`
-- [x] 普通攻击作为 `BasicAttack` 接入统一技能槽与技能状态
-- [x] 使用 `SkillDefinition`、目标解析器和伤害效果 SO 组合普通攻击
-- [x] 使用动画事件调用攻击判定和攻击结束
-- [x] 使用 `Physics2D.OverlapCircleAll` 检测攻击目标
-- [x] 使用 LayerMask 筛选敌人 Hurtbox
-- [x] 添加攻击方向过滤
-- [x] 避免一次攻击对同一目标重复结算伤害
-- [x] 从玩家属性模板读取攻击伤害
-- [x] 木桩受击后播放 Hit 动画并恢复待机状态
-
-### 技能系统骨架
-
-脚本目录：`Assets/Scripts/Skills`
-
-- [x] 按 Data、Core、Runtime、Targeting、Effects、Conditions、Triggers 和 Presentation 分层
-- [x] 使用 `SkillDefinition` ScriptableObject 保存技能静态配置
-- [x] 使用 `SkillRuntime` 保存每个角色独立的冷却状态
-- [x] 接通普通攻击和五个主动技能共六个统一技能槽
-- [x] 实现主动技能的状态、耗蓝、冷却、目标解析和效果执行流程
-- [x] 将技能流程拆分为 Aim、Delivery、Hit 和 Effects 四个阶段
-- [x] 提供面朝方向、鼠标方向、自身和选中敌人瞄准解析器
-- [x] 提供自身、选中敌人、圆形、扇形和直线命中解析器
-- [x] 提供即时目标、投射物和持续范围三种 Delivery
-- [x] 使用 `SkillAreaEmitter` 支持按固定间隔重复进行范围结算
-- [x] 提供通用 `SkillProjectile`，由投射物预制体负责移动和碰撞
-- [x] 提供伤害和治疗效果模块
-- [x] 预留技能条件、被动触发和动画/音效/特效表现接口
-- [x] 创建并配置普通攻击技能资产
-- [x] 创建并配置按键 `2` 对应的剑刃风暴主动技能资产
-- [x] 支持持续技能的起手 Trigger、维持 Bool 和松开收尾动画
-- [x] 支持按住输入持续引导、每秒耗蓝和可选的无限最大持续时间
-- [x] 剑刃风暴在起手动画事件后才创建持续伤害区域
-- [x] 持续伤害区域跟随施法者，并按动画视觉范围调整为 1.65 世界单位
-- [ ] 接入技能栏 UI、冷却显示和失败反馈
-
-统一执行流程：
+## 我的开发流程
 
 ```text
-Input/UI
-    ↓
-SkillController 校验并生成 SkillCastContext
-    ↓
-AimResolver 确定方向、位置或锁定目标
-    ↓
-动画事件或计时到达释放点
-    ↓
-Delivery 立即检测目标或生成投射物
-    ↓
-命中时生成 SkillHitContext
-    ↓
-依次执行 SkillEffect
+确定功能需求
+→ 明确系统边界和实现思路
+→ 确定美术规范与角色原型
+→ 制作、拆分并规范命名资源
+→ 创建 ScriptableObject 数据配置
+→ 接入代码、动画和场景
+→ 在训练场验证完整流程
+→ 修复问题并更新本文件
+→ 提交并同步到 GitHub
 ```
 
-普通攻击使用 `FacingAim + InstantTargetDelivery + MeleeTargetResolver`；远程技能使用 `PointerAim/SelectedTargetAim + ProjectileDelivery + SkillProjectile Prefab`。
+我遵循以下开发约定：
 
-技能表现支持两种 Animator 参数：一次性技能使用 `Trigger`；持续技能使用起手 `Trigger` 加维持 `Bool`，`PlayerSkillState` 退出时会自动关闭持续技能的 Bool。
+- 优先通过数据和模块组合功能，避免把具体技能写死在角色代码中。
+- ScriptableObject 只保存静态配置，当局状态由运行时对象管理。
+- 美术制作前先确认主画风和人物原型，避免后续资源风格漂移。
+- 制作过程与参考资源放在 `Assets/Art`，运行时资源放在 `Assets/Resources`。
+- 功能完成后检查 C# 编译、Unity Console、资源引用和实际运行效果。
 
-技能时长支持固定时长和按住引导两种模式。引导技能通过输入的按下/松开事件维护稳定持有状态，松开按键、蓝量不足、达到可选最大时长或角色死亡时结束；持续范围 Delivery 会随技能结束销毁，引导技能的冷却可配置为结束时开始。持续技能的 `totalDuration = 0` 表示不限制最大持续时间。
+## 功能板块
 
-剑刃风暴当前配置：启动消耗 20 MP、持续消耗 5 MP/秒、冷却 8 秒、起效时间约 0.583 秒、伤害间隔 0.3 秒。动画拆分为 `BladeStorm_Start`、`BladeStorm_Loop` 和 `BladeStorm_End`，其中循环片段开启 Loop Time。
+### 1. 玩家系统
 
-### 美术规范与技能 UI 资源
+#### 实现思路
 
-- [x] 将 `GameArtStyle_MasterReference.png` 定为游戏和 UI 的主美术规范
-- [x] 将黑色阵营战士原型与用户确认的剑刃风暴关键帧保存为角色动画依据
-- [x] 整理 192×192、透明背景的剑刃风暴逐帧资源和横向 Sprite Sheet
-- [x] 拆分六槽技能栏、按键帽、冷却/选中/锁定叠层等 UI 图片
-- [x] 拆分范围圈、最大距离、扇形、直线、冲刺路径和目标标记等世界指示器
-- [x] 导入剑刃风暴技能图标以及技能面板、图标和面板参考资源
-- [x] 导入 Fusion Pixel 12px 字体及 TMP SDF 资源
-- [ ] 在场景中组装技能栏并绑定技能、冷却、耗蓝和输入状态
-- [ ] 将世界指示器接入技能瞄准与有效/无效范围反馈
+我使用 `PlayerManager` 组装输入、移动、动画、属性和技能模块，使用状态机隔离正常移动、技能释放和死亡状态。基础属性来自 `CharacterStatsData`，生命和法力在运行时分别由 `Health`、`ResourcePool` 管理。
 
-主美术规范位于 `Assets/Art/References`；制作过程、概念稿和源资源保存在 `Assets/Art`；可直接供运行时加载的 UI 资源位于 `Assets/Resources/UI`。
+#### 完成情况
 
-### 玩家 HUD
+- [完成] WASD 移动和左右朝向
+- [完成] Idle、Run、Attack 与技能动画切换
+- [完成] HP、MP 与死亡状态
+- [完成] Normal、Skill、Dead 玩家状态
+- [完成] 六个统一技能输入槽
+- [进行中] 移动手感、斜向速度和地图边界验收
 
-脚本：`Assets/Scripts/UI/PlayerStatusHud.cs`
+#### 关键接口
 
-- [x] 显示角色姓名
-- [x] 显示角色头像并预留替换入口
-- [x] 使用 Slider 和文本显示 HP
-- [x] 使用 Slider 和文本显示 MP
-- [x] 通过事件刷新数值，不在 `Update` 中轮询
+- `PlayerManager`：玩家模块装配与 Unity 生命周期入口
+- `PlayerInputHandler`：移动、技能按下和持续持有状态
+- `PlayerAnimator`：移动、普通攻击和持续技能动画参数
+- `PlayerSkillState`：技能释放、维持与结束流程
+- `CharacterStatsData`：角色基础属性模板
 
-### 目标选择与 Enemy HUD
+#### 下一步
 
-脚本：
+- 完成移动和碰撞边界测试。
+- 补充受击、硬直和更完整的死亡流程。
 
-- `Assets/Scripts/Enemy/EnemyTargetSelector.cs`
-- `Assets/Scripts/UI/EnemyTargetHud.cs`
+### 2. 战斗与技能系统
 
-已实现：
+#### 实现思路
 
-- [x] 左键点击 Collider2D 选择敌人
-- [x] 点击空白取消选择
-- [x] 点击 UI 时不改变场景目标
-- [x] 选中目标时切换描边材质
-- [x] 取消选择时恢复原材质
-- [x] 固定位置显示目标名称和生命值
-- [x] 无限生命目标显示 `∞`
-- [x] 目标死亡时解绑 UI 和选择状态
-
-选择流程：
+我把技能拆成可组合的配置模块。`SkillDefinition` 保存技能入口数据，再分别组合瞄准、命中目标、投递方式、效果和表现模块。普通攻击也使用同一套流程，避免维护独立的战斗代码。
 
 ```text
-鼠标左键
-    ↓
-Collider2D 命中 EnemyManager
-    ↓
-切换描边材质 + EnemyTargetHud.Show
-    ↓
-点击空白或目标死亡
-    ↓
-恢复原材质 + EnemyTargetHud.Hide
+输入或 UI
+→ PlayerSkillController 校验冷却、法力与条件
+→ SkillAimResolver 确定方向和位置
+→ 动画事件或计时到达释放点
+→ SkillDelivery 创建即时、投射物或持续范围效果
+→ SkillTargetResolver 收集目标
+→ SkillEffect 执行伤害、治疗等结果
 ```
 
-### 描边与伪 3D 排序
+#### 完成情况
 
-- 描边材质：`Assets/Materials/M_EnemySelectionOutline.mat`
-- 描边 Shader：`Assets/Shader/SpriteSelectionOutline.shader`
-- Y 排序脚本：`Assets/Scripts/Common/YSortRenderer.cs`
+- [完成] 普通攻击接入统一技能系统
+- [完成] 主动技能耗蓝、持续耗蓝和冷却
+- [完成] 面向、鼠标、自身和选中目标瞄准方式
+- [完成] 单体、圆形、扇形、直线和近战目标解析
+- [完成] 即时、投射物和持续范围三种投递方式
+- [完成] 伤害和治疗效果模块
+- [完成] 剑刃风暴起手、循环和收尾动画结构
+- [完成] 剑刃风暴在起手完成后生成持续伤害区域
+- [完成] 按住维持、松开结束和 `totalDuration = 0` 无限持续语义
+- [进行中] 剑刃风暴长按、耗蓝、伤害范围和收尾的完整运行验收
+- [未开始] 技能升级、解锁关系和技能装配
 
-描边使用亮黄色和 2.5 像素宽度。Shader 通过 8 方向透明度采样生成轮廓，能够随 Sprite 动画帧变化。
+#### 关键接口与资源
 
-Y 排序读取角色脚底 `SortPoint` 的世界坐标：
-
-```text
-脚底 Y 越小 → Order 越大 → 显示在前面
-脚底 Y 越大 → Order 越小 → 显示在后面
-```
-
-该排序只影响渲染顺序，不改变角色坐标、碰撞体、动画或描边逻辑。
-
-## 主要目录
-
-| 路径 | 用途 |
+| 接口 | 用途 |
 |---|---|
-| `Assets/Data/Characters` | 角色属性 ScriptableObject 资源 |
-| `Assets/Data/Skills` | 普通攻击与主动技能的组合式 ScriptableObject 资源 |
-| `Assets/Art/References` | 游戏画风与角色动画的权威参考 |
-| `Assets/Art` | 概念稿、生成源图、动画帧和特效制作资源 |
-| `Assets/Scripts/Common` | 生命、资源、状态机和 Y 轴排序 |
-| `Assets/Scripts/Player` | 玩家控制、状态和战斗 |
-| `Assets/Scripts/Skills` | 技能数据、运行时、瞄准、投递、目标与效果模块 |
-| `Assets/Scripts/Enemy` | 敌人状态、训练木桩和目标选择 |
-| `Assets/Scripts/Stats` | 属性模板定义 |
-| `Assets/Scripts/UI` | 玩家与目标 HUD |
-| `Assets/Materials` | 运行时材质 |
-| `Assets/Shader` | 手写描边 Shader |
-| `Assets/Resources/UI` | UI 图片和字体资源 |
-| `Assets/Resources/UI/SkillSystem` | 技能栏状态组件与世界范围指示器 |
-| `Assets/Scenes` | 可运行场景 |
+| `SkillDefinition` | 组合一项技能的静态配置 |
+| `SkillAimResolver` | 决定释放方向、位置或锁定目标 |
+| `SkillTargetResolver` | 决定技能实际命中的目标 |
+| `SkillDelivery` | 决定即时、投射物或持续范围形式 |
+| `SkillEffect` | 执行伤害、治疗等效果 |
+| `SkillPresentationData` | 配置动画参数、音效和特效 |
+| `PlayerSkillController` | 管理技能生命周期、冷却和资源消耗 |
 
-## UI 维护约定
+技能脚本位于 `Assets/Scripts/Skills`，技能配置位于 `Assets/Data/Skills`。
 
-- 当前界面数量较少，不使用全局单例 `UIManager`。
-- 每个 HUD 只负责展示和数据解绑，不持有战斗规则。
-- UI 读取公开属性并订阅事件，不直接修改 ScriptableObject。
-- 目标选择逻辑由 `EnemyTargetSelector` 管理，不写进 Enemy HUD。
-- 后续界面数量增加后，再引入负责打开、关闭、层级和返回栈的 UI 导航服务。
-- 头像为空时保留现有占位图，后续可直接在角色 SO 中配置 Sprite。
+#### 新增技能流程
 
-## 当前系统状态
+1. 创建 `SkillDefinition`。
+2. 选择或创建 Aim、Target、Delivery 和 Effect 资源。
+3. 配置消耗、冷却、释放时机和持续方式。
+4. 配置动画参数、音效和特效。
+5. 放入玩家技能槽并绑定输入或 UI。
+6. 在训练场验证起手、命中、结束和异常中断。
 
-| 系统 | 状态 |
-|---|---|
-| Tilemap 地图 | 基础地面与围栏完成，碰撞和最终分层待补齐 |
-| 玩家移动 | 已实现，待完整手感和边界测试 |
-| 玩家战斗 | 普通攻击已接入统一技能状态；剑刃风暴代码与资源已接入，待完整手动验收 |
-| 技能系统 | 已支持主动技能、冷却、耗蓝、动画事件、持续引导与持续范围伤害 |
-| 技能 UI 资源 | 技能栏与世界指示器图片已整理，运行时 UI 尚未组装 |
-| 美术规范 | 已保存主画风、角色原型和技能动画参考 |
-| YooAsset | 3.0.5 已安装，BundleCollectorSetting 尚未配置资源包 |
-| 属性系统 | 基础模板与当局运行时数据已分离 |
-| 训练木桩 | 已实现受击、无限生命和目标选择 |
-| 玩家 HUD | 已接入姓名、头像、HP、MP |
-| 目标 HUD | 已接入名称、生命和无限生命显示 |
-| 选中反馈 | 手写 Shader 描边已接入 |
-| 伪 3D 排序 | 玩家与木桩已使用脚底 Y 排序 |
-| 敌人 AI | 未开始 |
-| 永久成长 | 未开始 |
-| 存档 | 未开始 |
-| 训练完成流程 | 未开始 |
+#### 下一步
 
-## 下一阶段待办
+- 完成剑刃风暴的手动运行验收。
+- 将技能事件提供给技能栏和冷却 UI。
+- 开始技能加点与解锁数据结构。
 
-### P0：完成训练场基础
+### 3. 敌人与交互系统
 
-- [ ] 整理 Ground、Walls、Foreground Tilemap 分层
-- [ ] 为围栏或墙体添加 TilemapCollider2D
-- [ ] 视需要加入 CompositeCollider2D
-- [ ] 配置 Cinemachine 相机边界
-- [ ] 配置 Pixel Perfect Camera
-- [ ] 验证玩家无法穿出地图
+#### 实现思路
 
-### P0：完整运行验收
+我使用 `EnemyManager` 管理敌人属性和状态，通过 `IDamageable` 接收统一伤害。目标选择由独立的 `EnemyTargetSelector` 管理，Enemy HUD 只负责显示数据，不参与战斗规则。
 
-- [ ] 验证斜向移动速度是否需要归一化
-- [ ] 验证连续攻击、正反方向命中和攻击范围边界
-- [ ] 验证剑刃风暴起手阶段无伤害、起手结束后开始结算
-- [ ] 验证长按进入循环、持续耗蓝与重复伤害，松开后正确收尾
-- [ ] 验证剑刃风暴 1.65 世界单位范围与画面特效一致
-- [ ] 验证选择、取消选择和多个目标切换
-- [ ] 验证可死亡目标死亡后自动取消选择
-- [ ] 验证玩家从目标上下经过时前后遮挡正确
-- [ ] 确认 Unity Console 没有影响运行的红色报错
+#### 完成情况
 
-### P1：反馈和训练流程
+- [完成] 训练木桩 Prefab 与无限生命模式
+- [完成] Idle、Hit 状态和受击反馈动画
+- [完成] 鼠标选择、取消选择和目标切换
+- [完成] 选中描边和目标 HUD
+- [完成] 目标死亡后的选择解绑接口
+- [未开始] 普通敌人的追击、攻击、死亡和掉落
 
-- [ ] 使用现有拆分资源组装六槽技能栏
-- [ ] 接入技能图标、冷却遮罩、按键提示、锁定与选中状态
-- [ ] 接入世界范围指示器和有效/无效范围反馈
-- [ ] 添加受击闪白或变色
-- [ ] 添加伤害数字
-- [ ] 添加攻击和命中特效
-- [ ] 添加镜头震动和音效
-- [ ] 添加移动、选择和攻击提示
-- [ ] 记录训练命中次数或完成条件
-- [ ] 显示训练完成提示并开启出口
-- [ ] 完成一次独立构建和试玩测试
+#### 关键接口
 
-### 后续系统
+- `EnemyManager`：敌人属性、状态与伤害入口
+- `EnemyTargetSelector`：场景目标选择
+- `IDamageable`：统一受伤接口
+- `EnemyTargetHud`：选中目标信息显示
 
-- [ ] 技能加点面板、解锁关系和技能装配
-- [ ] 配置 YooAsset 资源包、构建规则和运行时加载流程
-- [ ] 普通敌人的追击、攻击和死亡流程
-- [ ] Buff、Debuff 和状态图标
-- [ ] 背包、装备、任务和地图界面
-- [ ] 永久成长和版本化存档
+#### 下一步
 
-## 建议实施顺序
+- 创建第一种可移动敌人。
+- 增加追击、攻击、死亡和掉落流程。
 
-```text
-墙体碰撞与相机收尾
-    ↓
-移动、攻击、选择与排序完整验收
-    ↓
-命中表现和音效
-    ↓
-训练完成条件与出口
-    ↓
-独立构建测试与修复
-```
+### 4. UI 系统
 
-第一版目标保持为：**能移动 → 能选中 → 能攻击 → 能看懂状态 → 有清晰反馈 → 能完成训练并离开。**
+#### 实现思路
 
-## 已知问题
+我让每个 HUD 独立订阅运行时数据事件，不在 `Update` 中轮询，也不把战斗规则写进 UI。当前界面数量较少，暂时不引入全局 `UIManager`；界面增多后再增加统一导航和窗口栈。
 
-- Unity Animator 图形编辑器偶尔输出 `UnityEditor.Graphs.Edge.WakeUp` 编辑器缓存异常；目前未发现对应的 C# 编译错误。
-- Y 轴排序依赖 `SortPoint` 位于实际脚底；切换位置不准确时应调整该点，而不是修改 Shader。
-- 描边依赖 Sprite 区域拥有足够透明边距；紧贴纹理边缘的图片可能出现轮廓裁切。
+#### 完成情况
 
-## 文档更新规则
+- [完成] 玩家头像、姓名、HP 和 MP 显示
+- [完成] 目标名称、生命和无限生命显示
+- [完成] Fusion Pixel 12px 字体与 TMP SDF 资源
+- [完成] 六槽技能栏、按键帽和状态叠层图片拆分
+- [完成] 世界范围圈、扇形、直线和目标标记图片拆分
+- [完成] 剑刃风暴技能图标资源
+- [进行中] 技能栏运行时组装
+- [未开始] 技能加点界面和解锁关系显示
 
-- 只在本文件记录项目状态和计划，不再拆分多个根目录 Markdown 文档。
-- 只把已经进入项目的内容标记为完成。
-- 未完整验证的功能保留在待验收项中。
-- 每次主要提交后更新“最近更新”“当前阶段”和“下一阶段待办”。
-- `Assets` 下的字体许可和第三方资源说明必须保留，不属于本进度文档的合并范围。
+#### 关键代码与资源
+
+- `PlayerStatusHud`：玩家状态显示
+- `EnemyTargetHud`：当前目标显示
+- `Assets/Resources/UI/SkillSystem`：技能栏与世界指示器运行资源
+- `Assets/Art/UI`：UI 概念稿和制作资源
+
+#### 下一步
+
+- 组装六槽技能栏并绑定技能数据。
+- 接入冷却遮罩、耗蓝、锁定、选中和按键提示。
+- 制作技能加点面板。
+
+### 5. 场景与世界系统
+
+#### 实现思路
+
+我使用 Tilemap 搭建训练场，通过 Cinemachine 跟随玩家，并使用角色脚底位置动态计算渲染顺序，形成俯视场景的前后遮挡关系。
+
+#### 完成情况
+
+- [完成] 训练场场景和基础 Tilemap
+- [完成] 主相机、Global Light 2D 和 Cinemachine 跟随
+- [完成] 玩家与训练木桩的脚底 Y 轴排序
+- [进行中] Ground、Walls 和 Foreground 最终分层
+- [未开始] 完整墙体碰撞和相机边界
+- [未开始] 训练完成条件、出口和场景切换
+
+#### 关键代码与资源
+
+- `Assets/Scenes/TrainingGround.unity`
+- `YSortRenderer`：根据脚底世界坐标计算排序层级
+- `SortPoint`：角色实际脚底参考点
+
+#### 下一步
+
+- 完成 TilemapCollider2D 和相机边界。
+- 增加训练完成条件与出口。
+
+### 6. 美术与表现系统
+
+#### 实现思路
+
+我将主画风和人物原型保存为项目内的权威参考。后续生成 UI、角色动画和技能特效时，必须优先匹配这些参考的像素尺度、轮廓、配色和装备细节。
+
+#### 完成情况
+
+- [完成] 保存游戏主画风参考与规范
+- [完成] 保存黑色阵营战士人物原型
+- [完成] 保存剑刃风暴关键帧和完整动画参考
+- [完成] 整理 192×192 透明背景动画帧与 Sprite Sheet
+- [完成] 创建剑刃风暴 Start、Loop、End 动画片段
+- [完成] 整理技能栏、世界指示器、技能图标和相关源图
+- [未开始] 命中特效、伤害数字、镜头震动和音效
+
+#### 资源规范
+
+- 主画风：`Assets/Art/References/GameArtStyle_MasterReference.png`
+- 人物原型：`Assets/Art/References/Characters/Warrior_Black_MasterPrototype.png`
+- 战士技能动画默认使用 192×192、透明 PNG、角色与特效合并帧。
+- Unity 图片使用 Point Filter、关闭 Mip Maps、关闭压缩并保留 Alpha。
+- 制作源图和备选方案保存在 `Assets/Art`，确认后的运行资源放入 `Assets/Resources`。
+
+#### 下一步
+
+- 为攻击和技能补充命中反馈。
+- 建立伤害数字、音效和镜头表现流程。
+
+### 7. 数据与资源管理
+
+#### 实现思路
+
+我用 ScriptableObject 保存角色和技能模板，用独立运行时对象保存当前生命、法力、冷却和技能状态。这样静态数据可以复用，也不会在运行时污染项目资源。资源加载后续统一交给 YooAsset。
+
+#### 完成情况
+
+- [完成] 角色基础属性与运行时状态分离
+- [完成] 技能定义与技能运行时状态分离
+- [完成] 安装 YooAsset 3.0.5
+- [完成] 创建 `BundleCollectorSetting`
+- [未开始] YooAsset Package、Collector 和构建规则
+- [未开始] 运行时资源初始化与加载流程
+- [未开始] 永久成长和版本化存档
+
+#### 关键接口与资源
+
+- `CharacterStatsData`：角色静态属性
+- `SkillDefinition`：技能静态配置
+- `SkillRuntime`：角色独立的技能冷却状态
+- `Health`、`ResourcePool`：当局生命与法力
+- `Assets/BundleCollectorSetting.asset`：YooAsset 收集配置入口
+
+#### 下一步
+
+- 配置 YooAsset 默认资源包和收集规则。
+- 设计存档 DTO，不直接序列化运行时组件或修改 SO。
+
+## 当前优先事项
+
+- [ ] 完成剑刃风暴长按、伤害时机、攻击范围和收尾验收
+- [ ] 使用现有资源组装六槽技能栏
+- [ ] 接入技能图标、冷却、耗蓝和技能状态
+- [ ] 制作技能加点面板和解锁关系
+- [ ] 完成训练场碰撞与相机边界
+
+## 最近开发记录
+
+### 2026-09-17
+
+- 接入组合式技能系统，并将普通攻击迁移到统一技能流程。
+- 接入剑刃风暴的起手、循环、收尾、持续耗蓝和范围伤害。
+- 整理主画风、人物原型、技能动画、技能图标和技能 UI 资源。
+- 安装 YooAsset，并创建尚未配置的收集设置。
+
+### 2026-09-16
+
+- 完成训练场基础场景、玩家移动与普通攻击。
+- 完成训练木桩、目标选择、描边、玩家 HUD 和目标 HUD。
+- 完成角色脚底 Y 轴排序。
+
+最近开发记录最多保留 5 次，完整历史以 Git 提交记录为准。
+
+## 常用工具
+
+- [AI FPS](https://aifps.top/index)：AI 工具导航与资源入口。
