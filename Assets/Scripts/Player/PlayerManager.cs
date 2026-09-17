@@ -8,14 +8,18 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
     [Header("角色配置")]
     [SerializeField] private CharacterStatsData baseStats;
 
-    [Header("攻击")]
+    [Header("技能释放")]
     [SerializeField] private Transform attackPoint;
-    [SerializeField, Min(0f)] private float attackRadius = 0.8f;
-    [SerializeField] private LayerMask enemyLayer;
+
+    [Header("技能")]
+    [SerializeField] private SkillDefinition[] equippedSkills =
+        new SkillDefinition[6];
+    [SerializeField] private EnemyTargetSelector skillTargetSelector;
 
     private Vector2 _moveInput;
 
     public CharacterStatsData BaseStats => baseStats;
+    public Transform AttackPoint => attackPoint;
     public Health Health { get; private set; }
     
     public ResourcePool Mana { get; private set; }
@@ -23,9 +27,9 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
     internal PlayerInputHandler Input { get; private set; }
     internal PlayerMovement Movement { get; private set; }
     internal PlayerAnimator Animation { get; private set; }
-    internal PlayerCombat Combat { get; private set; }
+    internal PlayerSkillController Skills { get; private set; }
     internal PlayerNormalState NormalState { get; private set; }
-    internal PlayerAttackState AttackState { get; private set; }
+    internal PlayerSkillState SkillState { get; private set; }
     internal PlayerDeadState DeadState { get; private set; }
 
     private StateMachine<PlayerManager> _stateMachine;
@@ -55,17 +59,18 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
         Animation = new PlayerAnimator(
             GetComponentInChildren<Animator>());
 
-        Combat = new PlayerCombat(
-            transform,
-            attackPoint,
-            attackRadius,
-            enemyLayer,
-            baseStats.AttackDamage);
+        if (skillTargetSelector == null)
+            skillTargetSelector = FindObjectOfType<EnemyTargetSelector>();
+
+        Skills = new PlayerSkillController(
+            this,
+            equippedSkills,
+            skillTargetSelector);
 
         _stateMachine = new StateMachine<PlayerManager>();
 
         NormalState = new PlayerNormalState(this, _stateMachine);
-        AttackState = new PlayerAttackState(this, _stateMachine);
+        SkillState = new PlayerSkillState(this, _stateMachine);
         DeadState = new PlayerDeadState(this, _stateMachine);
 
         Health.Died += OnDied;
@@ -79,6 +84,7 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
 
     private void Update()
     {
+        Skills?.Tick(Time.deltaTime);
         _stateMachine.Update();
     }
 
@@ -99,6 +105,7 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
             Health.Died -= OnDied;
 
         Input?.Dispose();
+        Skills?.Dispose();
     }
 
     public void TakeDamage(int damage)
@@ -131,13 +138,23 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
 
     public void AttackHit()
     {
-        if (_stateMachine.CurrentState is PlayerAttackState attackState)
-            attackState.AttackHit();
+        SkillCastPoint();
     }
 
     public void EndAttack()
     {
-        if (_stateMachine.CurrentState is PlayerAttackState attackState)
-            attackState.FinishAttack();
+        EndSkill();
+    }
+
+    public void SkillCastPoint()
+    {
+        if (_stateMachine.CurrentState is PlayerSkillState skillState)
+            skillState.ReleaseSkill();
+    }
+
+    public void EndSkill()
+    {
+        if (_stateMachine.CurrentState is PlayerSkillState skillState)
+            skillState.FinishSkill();
     }
 }

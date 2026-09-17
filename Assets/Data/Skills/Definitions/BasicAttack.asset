@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6443ea6affc8be446bc87661be03e3d5, type: 3}
+  m_Name: BasicAttack
+  m_EditorClassIdentifier: 
+  skillId: basic_attack
+  displayName: "\u666E\u901A\u653B\u51FB"
+  description: "\u4F7F\u7528\u5F53\u524D\u653B\u51FB\u529B\u5BF9\u9762\u524D\u76EE\u6807\u9020\u6210\u4F24\u5BB3\u3002"
+  icon: {fileID: 0}
+  categories: 1
+  activationType: 0
+  manaCost: 0
+  manaCostPerSecond: 0
+  cooldown: 0
+  castRange: 0
+  castSettings:
+    releaseMode: 1
+    durationMode: 0
+    cooldownStartMode: 0
+    effectTime: 0
+    totalDuration: 0
+    canMoveWhileCasting: 1
+    canBeInterrupted: 1
+  aimResolver: {fileID: 11400000, guid: d66560d108fc4b0da168520aa337958a, type: 2}
+  delivery: {fileID: 11400000, guid: 03e5a3bdcd5b4edfb2632c62df96ee4f, type: 2}
+  conditions: []
+  effects:
+  - {fileID: 11400000, guid: 8e360d99f1a442898d1ecd591aa7fee4, type: 2}
+  passiveTrigger: {fileID: 0}
+  presentation:
+    animationParameterType: 0
+    animationParameter: Attack
+    castSound: {fileID: 0}
+    castEffectPrefab: {fileID: 0}
+    impactEffectPrefab: {fileID: 0}

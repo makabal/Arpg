@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6443ea6affc8be446bc87661be03e3d5, type: 3}
+  m_Name: BladeStorm
+  m_EditorClassIdentifier: 
+  skillId: blade_storm
+  displayName: "\u5251\u5203\u98CE\u66B4"
+  description: "\u6301\u7EED\u65CB\u8F6C\uFF0C\u5BF9\u5468\u56F4\u654C\u4EBA\u9020\u6210\u591A\u6B21\u4F24\u5BB3"
+  icon: {fileID: 21300000, guid: 0ca9f24116e2e28479d1806d0f0ebae0, type: 3}
+  categories: 1
+  activationType: 0
+  manaCost: 20
+  manaCostPerSecond: 5
+  cooldown: 8
+  castRange: 0
+  castSettings:
+    releaseMode: 1
+    durationMode: 1
+    cooldownStartMode: 1
+    effectTime: 0.5833333
+    totalDuration: 0
+    canMoveWhileCasting: 1
+    canBeInterrupted: 1
+  aimResolver: {fileID: 11400000, guid: 37323469dbbce5f4fbd0e5c9b1d80c97, type: 2}
+  delivery: {fileID: 11400000, guid: a508b6eef8fc2834ab2311cc611015a2, type: 2}
+  conditions: []
+  effects:
+  - {fileID: 11400000, guid: 843276259b414bd4f8ef470bb9a5b15d, type: 2}
+  passiveTrigger: {fileID: 0}
+  presentation:
+    animationParameterType: 1
+    animationParameter: BladeStormActive
+    animationStartTrigger: BladeStorm
+    castSound: {fileID: 0}
+    castEffectPrefab: {fileID: 0}
+    impactEffectPrefab: {fileID: 0}

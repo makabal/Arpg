@@ -21,4 +21,53 @@ public sealed class PlayerAnimator
     {
         _animator.SetTrigger(AttackHash);
     }
+
+    public void PlaySkillAnimation(SkillPresentationData presentation)
+    {
+        if (presentation == null)
+            return;
+
+        if (presentation.AnimationParameterType ==
+                SkillAnimationParameterType.Bool &&
+            !string.IsNullOrWhiteSpace(
+                presentation.AnimationParameter))
+        {
+            _animator.SetBool(presentation.AnimationParameter, true);
+        }
+
+        if (!string.IsNullOrWhiteSpace(
+                presentation.AnimationStartTrigger))
+        {
+            _animator.SetTrigger(
+                presentation.AnimationStartTrigger);
+        }
+        else if (presentation.AnimationParameterType ==
+                     SkillAnimationParameterType.Trigger &&
+                 !string.IsNullOrWhiteSpace(
+                     presentation.AnimationParameter))
+        {
+            _animator.SetTrigger(presentation.AnimationParameter);
+        }
+    }
+
+    public void StopSkillAnimation(SkillPresentationData presentation)
+    {
+        if (presentation == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(
+                presentation.AnimationStartTrigger))
+        {
+            _animator.ResetTrigger(
+                presentation.AnimationStartTrigger);
+        }
+
+        if (presentation.AnimationParameterType ==
+                SkillAnimationParameterType.Bool &&
+            !string.IsNullOrWhiteSpace(
+                presentation.AnimationParameter))
+        {
+            _animator.SetBool(presentation.AnimationParameter, false);
+        }
+    }
 }

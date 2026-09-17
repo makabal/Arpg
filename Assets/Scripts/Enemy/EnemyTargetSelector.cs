@@ -18,12 +18,29 @@ public sealed class EnemyTargetSelector : MonoBehaviour
     private SpriteRenderer _selectedRenderer;
     private Material _originalMaterial;
 
+    public EnemyManager SelectedEnemy => _selectedEnemy;
+
+    public Vector2 PointerWorldPosition
+    {
+        get
+        {
+            if (worldCamera == null || Mouse.current == null)
+                return transform.position;
+
+            Vector2 screenPosition =
+                Mouse.current.position.ReadValue();
+
+            return worldCamera.ScreenToWorldPoint(screenPosition);
+        }
+    }
+
     private void Awake()
     {
         if (worldCamera == null)
             worldCamera = Camera.main;
 
-        targetHud.Hide();
+        if (targetHud != null)
+            targetHud.Hide();
     }
 
     private void Update()
@@ -88,7 +105,8 @@ public sealed class EnemyTargetSelector : MonoBehaviour
         }
 
         _selectedHealth.Died += OnSelectedEnemyDied;
-        targetHud.Show(enemy);
+        if (targetHud != null)
+            targetHud.Show(enemy);
     }
 
     private void ClearSelection()
@@ -104,7 +122,8 @@ public sealed class EnemyTargetSelector : MonoBehaviour
         _selectedRenderer = null;
         _originalMaterial = null;
 
-        targetHud.Hide();
+        if (targetHud != null)
+            targetHud.Hide();
     }
 
     private void OnSelectedEnemyDied()

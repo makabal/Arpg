@@ -45,6 +45,18 @@ public sealed class Health
         if (IsDead)
             Died?.Invoke();
     }
+
+    public void Restore(int amount)
+    {
+        if (IsInfinite || IsDead || amount <= 0)
+            return;
+
+        int previousHealth = CurrentHealth;
+        CurrentHealth = Math.Min(CurrentHealth + amount, MaxHealth);
+
+        if (CurrentHealth != previousHealth)
+            Changed?.Invoke(CurrentHealth, MaxHealth);
+    }
 }
 
 public interface IDamageable

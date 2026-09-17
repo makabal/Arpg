@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e31b43c1711f02f4e85449cbffdfc9a1, type: 3}
+  m_Name: BladeStormDelivery
+  m_EditorClassIdentifier: 
+  targetResolver: {fileID: 11400000, guid: f31556c130b7b0e4c8931c7df6e3651b, type: 2}
+  lifetimeMode: 1
+  duration: 3
+  tickInterval: 0.3
+  applyImmediately: 1
+  followCaster: 1
