@@ -427,45 +427,85 @@ README
 
 # 当前任务
 
-> 没有任务时保持本区域为空模板。
-> ChatGPT 在需求确认后填写。
-> Codex 只执行状态为 READY 或 CHANGES_REQUESTED 的任务。
-
 ## Task
 
-**ID:**  
-**Status:** DRAFT  
-**Title:**  
+**ID:** ARPG-20260920-01  
+**Status:** READY  
+**Title:** 技能栏职责清理
 
 ### 目标
 
--
+移除技能栏链路中的解锁/锁定职责，使 SkillBar 和 SkillSlotView 只负责当前已装备技能的展示与输入。
 
 ### 背景
 
--
+当前技能栏已经完成六槽运行时接入，但仍保留 `IsUnlocked`、`UnlockChanged`、`SkillLocked` 和锁图标/锁定判断等逻辑。
+
+项目长期架构已经确认：
+
+- 技能解锁属于未来技能界面 / 技能树。
+- SkillBar 只管理当前装备的 6 个技能。
+- SkillSlotView 只负责展示和输入。
+
+相关规范：
+
+- `Docs/Standards/SKILL_SYSTEM_RULES.md`
+- `Docs/Decisions/ADR-001-SKILL-COLLECTION-AND-HOTBAR.md`
 
 ### 实现边界
 
 #### 本次包含
 
--
+- 移除技能栏链路中的 `PlayerSkillEntry.IsUnlocked` 使用。
+- 移除与技能栏相关的 `PlayerSkillEntry.SetUnlocked(...)` / `PlayerSkillCollection.UnlockChanged` 使用。
+- 移除 `SkillUseFailure.SkillLocked` 在当前技能栏使用链路中的作用。
+- 移除 `SkillSlotView` 中的解锁判断、锁图标和锁定状态逻辑。
+- 保留现有技能图标、空槽、冷却、快捷键、鼠标/键盘输入行为。
+- 必要时清理已经失去用途的相关字段、事件或序列化引用。
 
 #### 本次不包含
 
--
+- 不实现技能树。
+- 不实现技能面板。
+- 不实现拖拽装配。
+- 不重构 `PlayerSkillCollection` 为完整的“全部技能库”。
+- 不修改现有技能释放、伤害、耗蓝、冷却规则。
+- 不进行与本任务无关的 UI 或技能系统重构。
 
 ### 技术约束
 
--
+- 必须遵守 `Docs/Workflows/AI_COLLABORATION.md`。
+- 由 GPT-5.6 Sol 负责需求理解、任务审查和是否拆分；本任务较小，不要求为了形式强行拆分。
+- 具体代码实现交给 GPT-5.6 LunaMax。
+- Sol 给 LunaMax 的任务必须明确包含目标、范围、非目标、约束和验收结果。
+- UI 只负责展示、事件订阅和输入转发，不加入战斗逻辑。
+- ScriptableObject 与 Runtime 的现有职责不变。
+- 提交前必须同步更新 `PROJECT_OVERVIEW.md`。
 
 ### 建议关注文件
 
--
+- `Assets/Scripts/Skills/Runtime/PlayerSkillCollection.cs`
+- `Assets/Scripts/Skills/Runtime/PlayerSkillController.cs`
+- `Assets/Scripts/Skills/Runtime/SkillRuntime.cs`
+- `Assets/Scripts/Skills/Data/SkillEnums.cs`
+- `Assets/Scripts/UI/SkillBar/SkillSlotView.cs`
+- `Assets/Prefab/UI/SkillBar/SkillSlot.prefab`
+
+Codex 应以仓库实际依赖关系为准，不应只机械修改上述文件。
 
 ### 验收标准
 
-- [ ]
+- [ ] SkillBar / SkillSlotView 不再判断技能是否解锁。
+- [ ] 技能栏运行时链路中不再依赖 `UnlockChanged`。
+- [ ] 当前技能栏使用流程不再返回或依赖 `SkillLocked`。
+- [ ] 技能栏不再显示或维护锁图标/锁定状态。
+- [ ] 空槽仍正常显示。
+- [ ] 已装备技能仍正常显示图标和快捷键。
+- [ ] 冷却遮罩仍由现有 `SkillRuntime` 状态驱动。
+- [ ] 数字键 `1–6` 和鼠标技能槽输入行为不因本次清理被破坏。
+- [ ] 不引入技能树、拖拽或 Collection 全量技能库重构。
+- [ ] 已明确记录静态检查、编译检查和 Unity Play Mode 验证中实际完成的部分。
+- [ ] 提交前已同步更新 `PROJECT_OVERVIEW.md`。
 
 ### Codex 实现记录
 
