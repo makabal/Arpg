@@ -26,7 +26,7 @@ Codex 内部采用：
 
 ```text
 GPT-5.6 Sol     → 主管
-GPT-5.6 LunaMax → 代码实现
+GPT-5.6 Luna（推理强度：极高 / xhigh） → 代码实现
 ```
 
 详细规则见 `Docs/Workflows/AI_COLLABORATION.md`。
@@ -69,9 +69,9 @@ ChatGPT + 开发者讨论需求/方案
     ↓
 在本文件创建任务：DRAFT → READY
     ↓
-Sol 读取 READY 任务并给 LunaMax 下发规范指令
+Sol 读取 READY 任务并给 GPT-5.6 Luna（推理强度：极高 / xhigh）下发规范指令
     ↓
-LunaMax 实现 + 自测
+GPT-5.6 Luna（推理强度：极高 / xhigh）实现 + 自测
     ↓
 Sol 主管审查
     ↓
@@ -187,7 +187,7 @@ Codex必须：
 - 阅读 `Docs/README.md`，并阅读与当前任务相关的 `Docs/Workflows/`、`Docs/Standards/` 和 `Docs/Decisions/`。
 - 阅读相关现有代码，不重复创建已有系统。
 - Sol 判断是否需要拆分；简单任务无需强行拆分。
-- Sol 给 LunaMax 的任务必须包含目标、背景、范围、非目标、约束、验收结果和建议关注文件。
+- Sol 给 GPT-5.6 Luna（推理强度：极高 / xhigh）的任务必须包含目标、背景、范围、非目标、约束、验收结果和建议关注文件。
 - 将状态改为 `IN_PROGRESS`。
 - 如果发现需求与现有架构冲突，先标记 `BLOCKED` 并说明原因，而不是自行重新设计整个系统。
 
@@ -430,7 +430,7 @@ README
 ## Task
 
 **ID:** ARPG-20260920-01  
-**Status:** READY  
+**Status:** REVIEW
 **Title:** 技能栏职责清理
 
 ### 目标
@@ -472,12 +472,16 @@ README
 - 不修改现有技能释放、伤害、耗蓝、冷却规则。
 - 不进行与本任务无关的 UI 或技能系统重构。
 
+### 需求变更
+
+- 2026-09-20：统一实现模型称谓为 `GPT-5.6 Luna（推理强度：极高 / xhigh）`；后续实现任务固定使用 `gpt-5.6-luna` + `xhigh`，不使用 `max`。不改变 Sol 主管与 GPT-5.6 Luna（推理强度：极高 / xhigh）执行的原有分工。
+
 ### 技术约束
 
 - 必须遵守 `Docs/Workflows/AI_COLLABORATION.md`。
 - 由 GPT-5.6 Sol 负责需求理解、任务审查和是否拆分；本任务较小，不要求为了形式强行拆分。
-- 具体代码实现交给 GPT-5.6 LunaMax。
-- Sol 给 LunaMax 的任务必须明确包含目标、范围、非目标、约束和验收结果。
+- 具体代码实现交给 GPT-5.6 Luna（推理强度：极高 / xhigh）。
+- Sol 给 GPT-5.6 Luna（推理强度：极高 / xhigh）的任务必须明确包含目标、范围、非目标、约束和验收结果。
 - UI 只负责展示、事件订阅和输入转发，不加入战斗逻辑。
 - ScriptableObject 与 Runtime 的现有职责不变。
 - 提交前必须同步更新 `PROJECT_OVERVIEW.md`。
@@ -511,26 +515,43 @@ Codex 应以仓库实际依赖关系为准，不应只机械修改上述文件�
 
 #### 实现摘要
 
--
+- 移除 `PlayerSkillEntry` 的解锁字段、构造参数和变更方法，并移除 `PlayerSkillCollection` 的解锁事件与设置接口。
+- `PlayerSkillController.TryBeginUse` 不再判断解锁状态；`SkillUseFailure` 不再包含 `SkillLocked`。
+- `PlayerManager` 保留槽位边界、基础攻击固定、重复技能限制和 Collection 注册约束，仅移除放置时的解锁判断。
+- `SkillSlotView` 仅保留图标、空槽、冷却、快捷键和输入；已装备技能直接显示 `SkillDefinition.Icon`，主动技能按钮可用。
+- 从 `SkillSlot.prefab` 移除 `LockImage` 子对象及其序列化引用，保留其余美术、布局和默认 Icon。
 
 #### 修改文件
 
--
+- `Assets/Scripts/Skills/Runtime/PlayerSkillCollection.cs`
+- `Assets/Scripts/Skills/Runtime/PlayerSkillController.cs`
+- `Assets/Scripts/Skills/Data/SkillEnums.cs`
+- `Assets/Scripts/Player/PlayerManager.cs`
+- `Assets/Scripts/UI/SkillBar/SkillSlotView.cs`
+- `Assets/Prefab/UI/SkillBar/SkillSlot.prefab`
+- `PROJECT_OVERVIEW.md`
+- `CODEX_BRIDGE.md`
+- `Docs/README.md`
+- `Docs/Workflows/AI_COLLABORATION.md`
+- `Docs/Workflows/FEATURE_DEVELOPMENT.md`
 
 #### 验证结果
 
--
+- 静态确认：运行时技能栏链路与 `SkillSlot.prefab` 已无 `IsUnlocked`、`SetUnlocked`、`UnlockChanged`、`SkillLocked`、`lockImage` 或 `LockImage` 残留；训练场仍保留六个 `SkillSlot` Prefab 实例，未见 `Missing Script` 或空脚本引用。
+- 编译确认：未验证。当前环境没有可用的 `dotnet` / C# 编译器，且未启动第二个 Unity 实例。
+- Unity Play Mode 验证：未验证。
 
 #### Git 信息
 
 ```text
-Branch:
-Commit:
+Branch: main
+Commit: 7468568
+Push: 未完成；环境安全策略拒绝向未验证归属的 `origin/main` 推送，未执行替代操作。
 ```
 
 #### 已知问题
 
--
+- Unity Editor 编译与 Play Mode 尚未在本次环境执行；数字键 1–6、鼠标输入、冷却和持续技能路径保留现有实现但未进行端到端运行验证。
 
 ### 验收反馈
 

@@ -23,7 +23,7 @@
 
 ### Workflows
 
-- `AI_COLLABORATION.md`：开发者确认、Sol 主管、LunaMax 实现和任务清单规则。
+- `AI_COLLABORATION.md`：开发者确认、Sol 主管、GPT-5.6 Luna（推理强度：极高 / xhigh）实现和任务清单规则。
 - `FEATURE_DEVELOPMENT.md`：功能从需求讨论到验收的完整流程。
 - `GIT_WORKFLOW.md`：Git 提交、拉取、推送和提交边界。
 - `UNITY_VALIDATION.md`：Unity 功能完成后的验证清单。

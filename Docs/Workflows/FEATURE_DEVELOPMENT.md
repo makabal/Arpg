@@ -21,11 +21,11 @@ Sol 给开发者 READY 前任务确认表格
 写入 CODEX_BRIDGE.md
 DRAFT → READY
         ↓
-Sol 给 GPT-5.6 LunaMax 下发规范实现任务
+Sol 给 GPT-5.6 Luna（推理强度：极高 / xhigh）下发规范实现任务
         ↓
 READY → IN_PROGRESS
         ↓
-LunaMax 实现 + 自检
+GPT-5.6 Luna（推理强度：极高 / xhigh）实现 + 自检
         ↓
 Sol 主管审查
         ↓
@@ -60,7 +60,7 @@ Sol 必须明确：
 
 ## 实现原则
 
-- LunaMax 只执行 Sol 已明确下发的任务范围。
+- GPT-5.6 Luna（推理强度：极高 / xhigh）只执行 Sol 已明确下发的任务范围。
 - 优先小步修改，不为单个需求顺便重写无关系统。
 - 先阅读现有代码，再决定是否新增类型。
 - Unity 序列化、Prefab、Animator、AnimationEvent 等内容必须明确说明是否经过 Editor/Play Mode 验证。
