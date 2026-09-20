@@ -137,6 +137,7 @@ Codex必须：
 
 - 确认任务状态为 `READY` 或 `CHANGES_REQUESTED`。
 - 阅读任务的目标、边界和验收标准。
+- 阅读 `Docs/README.md`，并阅读与当前任务相关的 `Docs/Workflows/`、`Docs/Standards/` 和 `Docs/Decisions/`。
 - 阅读相关现有代码，不重复创建已有系统。
 - 将状态改为 `IN_PROGRESS`。
 - 如果发现需求与现有架构冲突，先标记 `BLOCKED` 并说明原因，而不是自行重新设计整个系统。
@@ -357,83 +358,19 @@ README
 
 ---
 
-## 13. 已确认架构约定
+## 13. 长期规范与架构决策
 
-### PlayerSkillCollection 与六槽技能栏
+长期有效的开发规范与架构决策统一维护在 `Docs/`：
 
-当前实现中，`PlayerSkillCollection` 只注册**当前六个技能栏里的技能**。这里的“当前六个技能栏里的技能”是对现状的准确描述，不代表最终长期职责。
+- `Docs/Workflows/`：开发和验证流程。
+- `Docs/Standards/`：项目与系统规范。
+- `Docs/Decisions/`：已确认的重要架构决策。
 
-后续当玩家可拥有超过 6 个技能，并加入技能面板 / 技能树 / 拖拽装配后，约定调整为：
+当前已确认的 PlayerSkillCollection / SkillBar 职责决策见：
 
-```text
-PlayerSkillCollection
-= 玩家已拥有 / 已解锁的全部技能
+`Docs/Decisions/ADR-001-SKILL-COLLECTION-AND-HOTBAR.md`
 
-SkillBar
-= 当前装备到 6 个快捷栏槽位中的技能
-```
-
-推荐的数据关系为：
-
-```text
-技能树 / 技能解锁
-        ↓
-PlayerSkillCollection
-        ↓ 拖拽 / 装配
-六槽 SkillBar
-```
-
-因此：
-
-- `PlayerSkillCollection` 继续保留，作为未来“玩家全部可用技能”的运行时集合基础。
-- 六槽 `SkillBar` 只负责当前装备与快捷键映射，不承担全部技能库存职责。
-- 当前阶段只有少量技能，不要求立即为此重构。
-- 当正式开始“技能数量超过 6 个、技能面板、技能树或拖拽装配”相关任务时，再拆分 Collection 的初始化来源，避免继续只从六槽 SkillBar 注册技能。
-
-
-### 技能解锁与技能栏职责边界
-
-已确认：**六槽技能栏不负责技能解锁逻辑。**
-
-技能栏存在的目的，是展示和操作玩家当前已经装备到快捷栏中的技能，因此技能栏链路只负责：
-
-- 当前槽位装备的技能。
-- 技能图标与空槽状态。
-- 冷却显示。
-- 快捷键显示。
-- 鼠标/键盘输入转发。
-- 后续的拖拽、替换和交换。
-
-技能是否解锁，应由未来专门的技能界面 / 技能树系统负责。在技能进入 SkillBar 之前完成资格校验，而不是把“未解锁技能”放进技能栏后再由 SkillBar 判断。
-
-推荐职责关系：
-
-```text
-技能树 / 技能界面
-负责：解锁、技能等级、技能点、分支选择、是否允许装备
-        ↓
-PlayerSkillCollection
-负责：玩家当前拥有的技能及其运行时数据
-        ↓
-SkillBar
-负责：6 个当前装备槽位、拖拽、替换、交换
-        ↓
-SkillSlotView
-负责：图标、冷却、快捷键和输入展示
-```
-
-因此后续清理技能栏实现时，原则上应移除或下沉以下与“解锁”相关的技能栏职责：
-
-- `PlayerSkillEntry.IsUnlocked`
-- `PlayerSkillEntry.SetUnlocked(...)`
-- `PlayerSkillCollection.UnlockChanged`
-- `SkillUseFailure.SkillLocked`
-- `SkillSlotView` 中基于解锁状态决定图标、按钮或锁图层的逻辑。
-- 技能栏中的锁图标/锁定状态。
-
-最终原则：
-
-> 解锁是技能系统/技能树的资格问题；SkillBar 只处理已经允许装备的技能。
+`CODEX_BRIDGE.md` 只保留当前任务、任务状态、交接记录和验收反馈，避免与长期规范重复。
 
 ---
 

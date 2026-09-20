@@ -24,6 +24,17 @@
 | 剑刃风暴 | 按住数字键 `2`，松开结束 |
 | 选择/取消目标 | 鼠标左键点击目标或空白区域 |
 
+## 项目文档
+
+长期开发流程、规范和架构决策统一放在 `Docs/`：
+
+- `Docs/Workflows/`：功能开发、Git、Unity 验证流程。
+- `Docs/Standards/`：Unity 项目与技能系统长期规范。
+- `Docs/Decisions/`：已经确认的重要架构决策。
+- `CODEX_BRIDGE.md`：只负责 ChatGPT ↔ Codex 的当前任务、交接和验收。
+
+详细入口见 `Docs/README.md`。
+
 ## 我的开发流程
 
 ```text
