@@ -21,9 +21,20 @@
 ChatGPT **不应把尚未确认的讨论内容直接当成实现要求**。
 
 ### Codex
+
+Codex 内部采用：
+
+```text
+GPT-5.6 Sol     → 主管
+GPT-5.6 LunaMax → 代码实现
+```
+
+详细规则见 `Docs/Workflows/AI_COLLABORATION.md`。
+
 负责：
 
-- 在开始工作前阅读本文件和当前任务。
+- 在开始工作前先阅读 `PROJECT_OVERVIEW.md`、本文件和当前任务。
+- 默认只有开发者确认任务清单后，任务才能进入 `READY`；开发者明确免除确认时除外。
 - 只执行状态为 `READY` 的任务。
 - 基于仓库当前代码实现，不擅自扩大需求范围。
 - 完成后进行必要的编译、静态检查或可执行测试。
@@ -42,15 +53,31 @@ Codex **不能自行把任务标记为 `ACCEPTED`**。
 ```text
 开发者提出想法
     ↓
+GPT-5.6 Sol 阅读项目并理解需求
+    ↓
+Sol 判断是否需要拆分
+    ↓
+Sol 给开发者任务清单
+    ↓
+开发者确认
+    ↓
+ChatGPT + 开发者讨论并固化需求
+    ↓
 ChatGPT + 开发者讨论需求/方案
     ↓
 需求确认
     ↓
 在本文件创建任务：DRAFT → READY
     ↓
-Codex 读取 READY 任务
+Sol 读取 READY 任务并给 LunaMax 下发规范指令
     ↓
-Codex 实现 + 自测 + 提交 Git
+LunaMax 实现 + 自测
+    ↓
+Sol 主管审查
+    ↓
+更新 PROJECT_OVERVIEW.md
+    ↓
+提交 Git
     ↓
 Codex 回填结果：READY → IN_PROGRESS → REVIEW
     ↓
@@ -136,9 +163,12 @@ ARPG-20260920-01
 Codex必须：
 
 - 确认任务状态为 `READY` 或 `CHANGES_REQUESTED`。
+- 阅读 `PROJECT_OVERVIEW.md`。
 - 阅读任务的目标、边界和验收标准。
 - 阅读 `Docs/README.md`，并阅读与当前任务相关的 `Docs/Workflows/`、`Docs/Standards/` 和 `Docs/Decisions/`。
 - 阅读相关现有代码，不重复创建已有系统。
+- Sol 判断是否需要拆分；简单任务无需强行拆分。
+- Sol 给 LunaMax 的任务必须包含目标、背景、范围、非目标、约束、验收结果和建议关注文件。
 - 将状态改为 `IN_PROGRESS`。
 - 如果发现需求与现有架构冲突，先标记 `BLOCKED` 并说明原因，而不是自行重新设计整个系统。
 
@@ -211,6 +241,8 @@ UI不应直接持有或实现核心战斗规则。
 ---
 
 ## 8. Codex 完成后必须回填
+
+提交前必须先同步更新 `PROJECT_OVERVIEW.md`。
 
 Codex完成任务后，在任务中填写：
 

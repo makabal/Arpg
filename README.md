@@ -26,9 +26,11 @@
 
 ## 项目文档
 
+项目全局状态优先阅读 `PROJECT_OVERVIEW.md`。
+
 长期开发流程、规范和架构决策统一放在 `Docs/`：
 
-- `Docs/Workflows/`：功能开发、Git、Unity 验证流程。
+- `Docs/Workflows/`：AI 协作、功能开发、Git、Unity 验证流程。
 - `Docs/Standards/`：Unity 项目与技能系统长期规范。
 - `Docs/Decisions/`：已经确认的重要架构决策。
 - `CODEX_BRIDGE.md`：只负责 ChatGPT ↔ Codex 的当前任务、交接和验收。

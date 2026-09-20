@@ -6,7 +6,7 @@
 
 - 根目录 `README.md`：项目现状、架构概要和开发进度。
 - 根目录 `CODEX_BRIDGE.md`：ChatGPT ↔ Codex 的当前任务、交接与验收。
-- `Docs/Workflows/`：某类工作应该按什么流程执行。
+- `Docs/Workflows/`：某类工作应该按什么流程执行，包括 AI 协作开发。
 - `Docs/Standards/`：代码、Unity 资源和系统设计需要遵守的长期规则。
 - `Docs/Decisions/`：已经确认的重要架构决策及其原因。
 
@@ -17,11 +17,13 @@
 3. 架构决策一旦确认，优先记录到 `Docs/Decisions/`。
 4. 修改规范时，应同步检查相关 README 和 CODEX_BRIDGE 是否需要更新引用。
 5. 实际代码与规范冲突时，不要擅自大规模重构；先确认是代码过时还是规范过时。
+6. 每次 Git Commit 前都必须同步更新根目录 `PROJECT_OVERVIEW.md`。
 
 ## 当前文档
 
 ### Workflows
 
+- `AI_COLLABORATION.md`：开发者确认、Sol 主管、LunaMax 实现和任务清单规则。
 - `FEATURE_DEVELOPMENT.md`：功能从需求讨论到验收的完整流程。
 - `GIT_WORKFLOW.md`：Git 提交、拉取、推送和提交边界。
 - `UNITY_VALIDATION.md`：Unity 功能完成后的验证清单。

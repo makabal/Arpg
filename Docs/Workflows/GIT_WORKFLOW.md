@@ -28,7 +28,19 @@ git stash pop
 
 ## 提交前
 
-至少执行：
+### 强制同步项目纵览
+
+每一次 Commit 前都必须检查并更新根目录：
+
+`PROJECT_OVERVIEW.md`
+
+要求：
+
+- 代码、架构、功能状态、输入、目录或已知限制变化时，更新对应章节。
+- 即使提交不改变项目运行状态，也要更新“最近同步记录”，保证每个 Commit 都包含一次 PROJECT_OVERVIEW 同步。
+- 未同步 PROJECT_OVERVIEW，不允许提交。
+
+完成纵览同步后，至少执行：
 
 ```bash
 git status
