@@ -283,7 +283,7 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
 
         PlayerSkillEntry entry = SkillCollection?.Get(definition);
 
-        if (entry == null || !entry.IsUnlocked)
+        if (entry == null)
             return false;
 
         for (int i = 0; i < skillBar.Count; i++)

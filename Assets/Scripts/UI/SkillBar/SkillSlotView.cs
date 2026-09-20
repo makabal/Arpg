@@ -12,12 +12,10 @@ public sealed class SkillSlotView : MonoBehaviour
     [SerializeField] private Image backgroundImage;
     [SerializeField] private Image iconImage;
     [SerializeField] private Image cooldownFill;
-    [SerializeField] private Image lockImage;
     [SerializeField] private TMP_Text hotkeyText;
     [SerializeField] private Button skillButton;
 
     private PlayerManager _player;
-    private PlayerSkillCollection _skillCollection;
     private PlayerSkillEntry _entry;
     private SkillRuntime _runtime;
 
@@ -35,9 +33,7 @@ public sealed class SkillSlotView : MonoBehaviour
             return;
         }
 
-        _skillCollection = _player.SkillCollection;
         _player.SkillBarChanged += OnSkillBarChanged;
-        _skillCollection.UnlockChanged += OnUnlockChanged;
         RefreshBinding();
     }
 
@@ -48,14 +44,11 @@ public sealed class SkillSlotView : MonoBehaviour
 
         if (_player != null)
             _player.SkillBarChanged -= OnSkillBarChanged;
-
-        if (_skillCollection != null)
-            _skillCollection.UnlockChanged -= OnUnlockChanged;
     }
 
     internal void PressInput()
     {
-        if (_entry == null || !_entry.IsUnlocked ||
+        if (_entry == null || _entry.Definition == null ||
             _entry.Definition.ActivationType != SkillActivationType.Active)
         {
             return;
@@ -93,30 +86,16 @@ public sealed class SkillSlotView : MonoBehaviour
             return;
         }
 
-        bool unlocked = _entry.IsUnlocked;
-
         if (iconImage != null)
         {
-            iconImage.sprite = unlocked
-                ? _entry.Definition.Icon
-                : null;
-            iconImage.enabled = unlocked && iconImage.sprite != null;
+            iconImage.sprite = _entry.Definition.Icon;
+            iconImage.enabled = iconImage.sprite != null;
         }
-
-        if (lockImage != null)
-            lockImage.gameObject.SetActive(!unlocked);
 
         if (skillButton != null)
         {
-            skillButton.interactable = unlocked &&
-                _entry.Definition.ActivationType ==
-                    SkillActivationType.Active;
-        }
-
-        if (!unlocked)
-        {
-            SetCooldown(0f, 0f);
-            return;
+            skillButton.interactable =
+                _entry.Definition.ActivationType == SkillActivationType.Active;
         }
 
         _runtime = _entry.Runtime;
@@ -138,9 +117,6 @@ public sealed class SkillSlotView : MonoBehaviour
             iconImage.sprite = null;
             iconImage.enabled = false;
         }
-
-        if (lockImage != null)
-            lockImage.gameObject.SetActive(false);
 
         if (skillButton != null)
             skillButton.interactable = false;
@@ -173,12 +149,6 @@ public sealed class SkillSlotView : MonoBehaviour
         SkillDefinition definition)
     {
         if (changedSlot == (int)slot)
-            RefreshBinding();
-    }
-
-    private void OnUnlockChanged(PlayerSkillEntry entry)
-    {
-        if (ReferenceEquals(entry, _entry))
             RefreshBinding();
     }
 }

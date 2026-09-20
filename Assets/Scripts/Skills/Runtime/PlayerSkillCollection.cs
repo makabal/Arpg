@@ -5,24 +5,11 @@ public sealed class PlayerSkillEntry
 {
     public SkillDefinition Definition { get; }
     public SkillRuntime Runtime { get; }
-    public bool IsUnlocked { get; private set; }
 
-    public PlayerSkillEntry(
-        SkillDefinition definition,
-        bool isUnlocked)
+    public PlayerSkillEntry(SkillDefinition definition)
     {
         Definition = definition;
         Runtime = new SkillRuntime(definition);
-        IsUnlocked = isUnlocked;
-    }
-
-    internal bool SetUnlocked(bool isUnlocked)
-    {
-        if (IsUnlocked == isUnlocked)
-            return false;
-
-        IsUnlocked = isUnlocked;
-        return true;
     }
 }
 
@@ -34,11 +21,8 @@ public sealed class PlayerSkillCollection
     public IEnumerable<PlayerSkillEntry> Entries => _entries.Values;
 
     public event Action<PlayerSkillEntry> SkillRegistered;
-    public event Action<PlayerSkillEntry> UnlockChanged;
 
-    public PlayerSkillEntry Register(
-        SkillDefinition definition,
-        bool isUnlocked = true)
+    public PlayerSkillEntry Register(SkillDefinition definition)
     {
         if (definition == null)
             return null;
@@ -46,7 +30,7 @@ public sealed class PlayerSkillCollection
         if (_entries.TryGetValue(definition, out PlayerSkillEntry entry))
             return entry;
 
-        entry = new PlayerSkillEntry(definition, isUnlocked);
+        entry = new PlayerSkillEntry(definition);
         _entries.Add(definition, entry);
         SkillRegistered?.Invoke(entry);
         return entry;
@@ -60,18 +44,5 @@ public sealed class PlayerSkillCollection
         return _entries.TryGetValue(definition, out PlayerSkillEntry entry)
             ? entry
             : null;
-    }
-
-    public bool SetUnlocked(
-        SkillDefinition definition,
-        bool isUnlocked)
-    {
-        PlayerSkillEntry entry = Get(definition);
-
-        if (entry == null || !entry.SetUnlocked(isUnlocked))
-            return false;
-
-        UnlockChanged?.Invoke(entry);
-        return true;
     }
 }

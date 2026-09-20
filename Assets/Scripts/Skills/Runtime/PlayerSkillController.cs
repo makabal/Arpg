@@ -90,9 +90,6 @@ public sealed class PlayerSkillController : IDisposable
         if (entry == null || entry.Definition == null)
             return Fail(slot, SkillUseFailure.NotEquipped);
 
-        if (!entry.IsUnlocked)
-            return Fail(slot, SkillUseFailure.SkillLocked);
-
         SkillRuntime runtime = entry.Runtime;
         SkillDefinition definition = entry.Definition;
 
