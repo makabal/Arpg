@@ -18,9 +18,9 @@ Only a main skill and its local upgrades are directly connected. Unrelated skill
 `Hotbar/` contains 26 transparent PNGs:
 
 - six-slot wooden frame and separate potion dock;
-- normal, hover, selected, pressed, disabled and locked slots;
-- LMB, RMB, Q and 1–4 keycaps;
-- selection, hover, cooldown, lock, upgrade, charge and active overlays;
+- normal, hover, selected, pressed, disabled and legacy locked slot assets;
+- keycap assets originally generated for several control schemes; the current runtime hotbar uses numeric slots `1`–`6`;
+- selection, hover, cooldown, upgrade, charge and active overlays; lock-related assets are currently legacy and should not drive hotbar logic;
 - modular end caps and divider.
 
 Recommended Unity hierarchy:
@@ -32,7 +32,7 @@ Recommended Unity hierarchy:
 5. charge or upgrade badge;
 6. keycap.
 
-The ordinary attack occupies the LMB slot inside the same six-skill bar.
+Current runtime mapping is: slot 1 = ordinary attack, slots 2–6 = active skill slots. The hotbar itself does not own skill-unlock logic; unlock eligibility belongs to the future skill screen / skill tree.
 
 ## World targeting
 
@@ -49,3 +49,14 @@ Use these with a world-space Canvas or SpriteRenderer placed just above the grou
 ## Atlases
 
 The original generated atlases are retained under `Atlases/` for review and optional Unity Sprite Editor slicing.
+
+
+## Current runtime status
+
+The six-slot hotbar is now assembled in `Assets/Scenes/TrainingGround.unity` using:
+
+- `Assets/Prefab/UI/SkillBar/SkillSlot.prefab`
+- `Assets/Scripts/UI/SkillBar/SkillSlotView.cs`
+- `Assets/Scripts/UI/SkillBar/SkillSlotButton.cs`
+
+The current runtime responsibility is limited to equipped-skill display, cooldown, hotkey text and input forwarding. Skill unlock, skill points, levels and progression should be implemented in the dedicated skill interface rather than in the hotbar.
