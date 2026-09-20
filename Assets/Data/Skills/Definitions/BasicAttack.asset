@@ -15,7 +15,7 @@ MonoBehaviour:
   skillId: basic_attack
   displayName: "\u666E\u901A\u653B\u51FB"
   description: "\u4F7F\u7528\u5F53\u524D\u653B\u51FB\u529B\u5BF9\u9762\u524D\u76EE\u6807\u9020\u6210\u4F24\u5BB3\u3002"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 9ac138a7dd8c35242ba2f1cfcc4a402b, type: 3}
   categories: 1
   activationType: 0
   manaCost: 0
@@ -39,6 +39,7 @@ MonoBehaviour:
   presentation:
     animationParameterType: 0
     animationParameter: Attack
+    animationStartTrigger:
     castSound: {fileID: 0}
     castEffectPrefab: {fileID: 0}
     impactEffectPrefab: {fileID: 0}
