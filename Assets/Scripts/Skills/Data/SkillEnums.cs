@@ -85,6 +85,7 @@ public enum SkillUseFailure
     None,
     InvalidSlot,
     NotEquipped,
+    SkillLocked,
     PassiveSkill,
     PlayerDead,
     Busy,

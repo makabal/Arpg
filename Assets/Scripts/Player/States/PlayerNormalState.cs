@@ -11,11 +11,8 @@ public sealed class PlayerNormalState : PlayerState
     {
         Owner.ReadMovementInput();
 
-        if (Owner.Input.TryGetPressedSkillSlot(out int slot) &&
-            Owner.Skills.TryBeginUse(slot) == SkillUseFailure.None)
-        {
-            StateMachine.ChangeState(Owner.SkillState);
-        }
+        if (Owner.Input.TryGetPressedSkillSlot(out SkillSlot slot))
+            Owner.TryUseSkillSlot(slot);
     }
 
     public override void FixedUpdate()

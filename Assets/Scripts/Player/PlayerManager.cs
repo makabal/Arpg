@@ -1,9 +1,13 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Rigidbody2D), typeof(Animator))]
 public sealed class PlayerManager : MonoBehaviour, IDamageable
 {
+    public const int SkillBarSlotCount = (int)SkillSlot.Skill5 + 1;
 
     [Header("角色配置")]
     [SerializeField] private CharacterStatsData baseStats;
@@ -12,9 +16,12 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
     [SerializeField] private Transform attackPoint;
 
     [Header("技能")]
-    [SerializeField] private SkillDefinition[] equippedSkills =
-        new SkillDefinition[6];
+    [FormerlySerializedAs("equippedSkills")]
+    [SerializeField] private List<SkillDefinition> skillBar =
+        new List<SkillDefinition>(SkillBarSlotCount);
     [SerializeField] private EnemyTargetSelector skillTargetSelector;
+
+    public event Action<int, SkillDefinition> SkillBarChanged;
 
     private Vector2 _moveInput;
 
@@ -28,14 +35,22 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
     internal PlayerMovement Movement { get; private set; }
     internal PlayerAnimator Animation { get; private set; }
     internal PlayerSkillController Skills { get; private set; }
+    public PlayerSkillCollection SkillCollection => Skills?.SkillCollection;
     internal PlayerNormalState NormalState { get; private set; }
     internal PlayerSkillState SkillState { get; private set; }
     internal PlayerDeadState DeadState { get; private set; }
 
     private StateMachine<PlayerManager> _stateMachine;
+
+    private void OnValidate()
+    {
+        EnsureSkillBarShape();
+    }
     
     private void Awake()
     {
+        EnsureSkillBarShape();
+
         if (baseStats == null)
         {
             Debug.LogError(
@@ -64,7 +79,7 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
 
         Skills = new PlayerSkillController(
             this,
-            equippedSkills,
+            skillBar,
             skillTargetSelector);
 
         _stateMachine = new StateMachine<PlayerManager>();
@@ -113,6 +128,93 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
         Health.TakeDamage(damage);
     }
 
+    public PlayerSkillEntry GetSkillEntry(SkillSlot slot)
+    {
+        return Skills?.GetSkillEntry((int)slot);
+    }
+
+    public SkillDefinition GetSkillAt(SkillSlot slot)
+    {
+        int slotIndex = (int)slot;
+        return IsValidSlot(slotIndex) ? skillBar[slotIndex] : null;
+    }
+
+    public bool TrySetSkill(SkillSlot slot, SkillDefinition definition)
+    {
+        int slotIndex = (int)slot;
+
+        if (!IsConfigurableSlot(slotIndex) ||
+            !CanPlaceSkill(slotIndex, definition))
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(skillBar[slotIndex], definition))
+            return true;
+
+        skillBar[slotIndex] = definition;
+        SkillBarChanged?.Invoke(slotIndex, definition);
+        return true;
+    }
+
+    public bool TrySwapSkill(SkillSlot first, SkillSlot second)
+    {
+        int firstIndex = (int)first;
+        int secondIndex = (int)second;
+
+        if (!IsConfigurableSlot(firstIndex) ||
+            !IsConfigurableSlot(secondIndex) ||
+            firstIndex == secondIndex)
+        {
+            return false;
+        }
+
+        SkillDefinition firstSkill = skillBar[firstIndex];
+        skillBar[firstIndex] = skillBar[secondIndex];
+        skillBar[secondIndex] = firstSkill;
+
+        SkillBarChanged?.Invoke(firstIndex, skillBar[firstIndex]);
+        SkillBarChanged?.Invoke(secondIndex, skillBar[secondIndex]);
+        return true;
+    }
+
+    public bool ClearSkill(SkillSlot slot)
+    {
+        return TrySetSkill(slot, null);
+    }
+
+    public void PressSkillSlot(SkillSlot slot)
+    {
+        if (Input == null)
+            return;
+
+        Input.SetUISkillSlotHeld(slot, true);
+        TryUseSkillSlot(slot);
+    }
+
+    public void ReleaseSkillSlot(SkillSlot slot)
+    {
+        Input?.SetUISkillSlotHeld(slot, false);
+    }
+
+    internal bool TryUseSkillSlot(int slot)
+    {
+        if (_stateMachine == null ||
+            !ReferenceEquals(_stateMachine.CurrentState, NormalState) ||
+            Skills.TryBeginUse(slot) != SkillUseFailure.None)
+        {
+            return false;
+        }
+
+        _stateMachine.ChangeState(SkillState);
+        return true;
+    }
+
+    internal bool TryUseSkillSlot(SkillSlot slot)
+    {
+        return TryUseSkillSlot((int)slot);
+    }
+
     private void OnDied()
     {
         _stateMachine.ChangeState(DeadState);
@@ -156,5 +258,50 @@ public sealed class PlayerManager : MonoBehaviour, IDamageable
     {
         if (_stateMachine.CurrentState is PlayerSkillState skillState)
             skillState.FinishSkill();
+    }
+
+    private void EnsureSkillBarShape()
+    {
+        if (skillBar == null)
+            skillBar = new List<SkillDefinition>(SkillBarSlotCount);
+
+        while (skillBar.Count < SkillBarSlotCount)
+            skillBar.Add(null);
+
+        if (skillBar.Count > SkillBarSlotCount)
+        {
+            skillBar.RemoveRange(
+                SkillBarSlotCount,
+                skillBar.Count - SkillBarSlotCount);
+        }
+    }
+
+    private bool CanPlaceSkill(int targetSlot, SkillDefinition definition)
+    {
+        if (definition == null)
+            return true;
+
+        PlayerSkillEntry entry = SkillCollection?.Get(definition);
+
+        if (entry == null || !entry.IsUnlocked)
+            return false;
+
+        for (int i = 0; i < skillBar.Count; i++)
+        {
+            if (i != targetSlot && ReferenceEquals(skillBar[i], definition))
+                return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsValidSlot(int slot)
+    {
+        return slot >= 0 && slot < SkillBarSlotCount;
+    }
+
+    private static bool IsConfigurableSlot(int slot)
+    {
+        return IsValidSlot(slot) && slot != (int)SkillSlot.BasicAttack;
     }
 }

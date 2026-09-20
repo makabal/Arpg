@@ -248,7 +248,7 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""74f6785c-b8c0-4fa7-9d4c-81a9876f8649"",
-                    ""path"": ""<Mouse>/rightButton"",
+                    ""path"": ""<Keyboard>/6"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

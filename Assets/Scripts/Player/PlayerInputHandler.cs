@@ -5,62 +5,69 @@ using UnityEngine.InputSystem;
 public sealed class PlayerInputHandler : IDisposable
 {
     private readonly NewActions _actions = new NewActions();
-    private readonly bool[] _heldSkillSlots =
-        new bool[(int)SkillSlot.Skill5 + 1];
+    private readonly InputAction[] _skillActions =
+        new InputAction[PlayerManager.SkillBarSlotCount];
+    private readonly bool[] _keyboardHeldSkillSlots =
+        new bool[PlayerManager.SkillBarSlotCount];
+    private readonly bool[] _uiHeldSkillSlots =
+        new bool[PlayerManager.SkillBarSlotCount];
 
     public PlayerInputHandler()
     {
-        TrackHeldState(
-            _actions.player.Attack,
-            SkillSlot.BasicAttack);
-        TrackHeldState(
-            _actions.player.Skill1,
-            SkillSlot.Skill1);
-        TrackHeldState(
-            _actions.player.Skill2,
-            SkillSlot.Skill2);
-        TrackHeldState(
-            _actions.player.Skill3,
-            SkillSlot.Skill3);
-        TrackHeldState(
-            _actions.player.Skill4,
-            SkillSlot.Skill4);
-        TrackHeldState(
-            _actions.player.Skill5,
-            SkillSlot.Skill5);
+        _skillActions[(int)SkillSlot.BasicAttack] = _actions.player.Attack;
+        _skillActions[(int)SkillSlot.Skill1] = _actions.player.Skill1;
+        _skillActions[(int)SkillSlot.Skill2] = _actions.player.Skill2;
+        _skillActions[(int)SkillSlot.Skill3] = _actions.player.Skill3;
+        _skillActions[(int)SkillSlot.Skill4] = _actions.player.Skill4;
+        _skillActions[(int)SkillSlot.Skill5] = _actions.player.Skill5;
+
+        for (int i = 0; i < _skillActions.Length; i++)
+            TrackHeldState(_skillActions[i], i);
     }
 
     public Vector2 MoveInput => _actions.player.Move.ReadValue<Vector2>();
 
-    public bool TryGetPressedSkillSlot(out int slot)
+    public bool TryGetPressedSkillSlot(out SkillSlot slot)
     {
-        if (_actions.player.Attack.WasPressedThisFrame())
-            slot = (int)SkillSlot.BasicAttack;
-        else if (_actions.player.Skill1.WasPressedThisFrame())
-            slot = (int)SkillSlot.Skill1;
-        else if (_actions.player.Skill2.WasPressedThisFrame())
-            slot = (int)SkillSlot.Skill2;
-        else if (_actions.player.Skill3.WasPressedThisFrame())
-            slot = (int)SkillSlot.Skill3;
-        else if (_actions.player.Skill4.WasPressedThisFrame())
-            slot = (int)SkillSlot.Skill4;
-        else if (_actions.player.Skill5.WasPressedThisFrame())
-            slot = (int)SkillSlot.Skill5;
-        else
+        for (int i = 0; i < _skillActions.Length; i++)
         {
-            slot = -1;
-            return false;
+            if (_skillActions[i].WasPressedThisFrame())
+            {
+                slot = (SkillSlot)i;
+                return true;
+            }
         }
 
-        _heldSkillSlots[slot] = true;
-        return true;
+        slot = default;
+        return false;
+    }
+
+    public string GetBindingDisplayString(SkillSlot slot)
+    {
+        int slotIndex = (int)slot;
+        return slotIndex >= 0 && slotIndex < _skillActions.Length
+            ? _skillActions[slotIndex].GetBindingDisplayString()
+            : string.Empty;
     }
 
     public bool IsSkillSlotHeld(int slot)
     {
         return slot >= 0 &&
-            slot < _heldSkillSlots.Length &&
-            _heldSkillSlots[slot];
+            slot < _keyboardHeldSkillSlots.Length &&
+            (_keyboardHeldSkillSlots[slot] ||
+                _uiHeldSkillSlots[slot]);
+    }
+
+    public void SetUISkillSlotHeld(
+        SkillSlot slot,
+        bool isHeld)
+    {
+        int slotIndex = (int)slot;
+
+        if (slotIndex < 0 || slotIndex >= _uiHeldSkillSlots.Length)
+            return;
+
+        _uiHeldSkillSlots[slotIndex] = isHeld;
     }
 
     public void Enable()
@@ -72,9 +79,13 @@ public sealed class PlayerInputHandler : IDisposable
     {
         _actions.player.Disable();
         Array.Clear(
-            _heldSkillSlots,
+            _keyboardHeldSkillSlots,
             0,
-            _heldSkillSlots.Length);
+            _keyboardHeldSkillSlots.Length);
+        Array.Clear(
+            _uiHeldSkillSlots,
+            0,
+            _uiHeldSkillSlots.Length);
     }
 
     public void Dispose()
@@ -84,12 +95,11 @@ public sealed class PlayerInputHandler : IDisposable
 
     private void TrackHeldState(
         InputAction action,
-        SkillSlot slot)
+        int slotIndex)
     {
-        int slotIndex = (int)slot;
         action.started += _ =>
-            _heldSkillSlots[slotIndex] = true;
+            _keyboardHeldSkillSlots[slotIndex] = true;
         action.canceled += _ =>
-            _heldSkillSlots[slotIndex] = false;
+            _keyboardHeldSkillSlots[slotIndex] = false;
     }
 }

@@ -6,7 +6,6 @@ public sealed class PlayerSkillController : IDisposable
 {
     private readonly PlayerManager _owner;
     private readonly EnemyTargetSelector _targetSelector;
-    private readonly SkillRuntime[] _skills;
     private readonly List<PassiveSkillRuntime> _passiveSkills =
         new List<PassiveSkillRuntime>();
 
@@ -22,6 +21,7 @@ public sealed class PlayerSkillController : IDisposable
     public bool HasActiveSkill => _activeSkill != null;
     public bool ActiveSkillReleased => _activeSkillReleased;
     public int ActiveSlot => _activeSlot;
+    public PlayerSkillCollection SkillCollection { get; }
 
     public event Action<int, SkillRuntime> SkillStarted;
     public event Action<int, SkillRuntime> SkillReleased;
@@ -30,56 +30,71 @@ public sealed class PlayerSkillController : IDisposable
 
     public PlayerSkillController(
         PlayerManager owner,
-        SkillDefinition[] definitions,
+        IReadOnlyList<SkillDefinition> definitions,
         EnemyTargetSelector targetSelector)
     {
         _owner = owner;
         _targetSelector = targetSelector;
-        _skills = new SkillRuntime[definitions?.Length ?? 0];
+        SkillCollection = new PlayerSkillCollection();
 
-        for (int i = 0; i < _skills.Length; i++)
+        for (int i = 0; i < PlayerManager.SkillBarSlotCount; i++)
         {
-            SkillDefinition definition = definitions[i];
+            SkillDefinition definition = definitions != null &&
+                i < definitions.Count
+                ? definitions[i]
+                : null;
 
             if (definition == null)
                 continue;
 
-            var runtime = new SkillRuntime(definition);
-            _skills[i] = runtime;
+            PlayerSkillEntry entry =
+                SkillCollection.Register(definition);
 
-            if (definition.ActivationType != SkillActivationType.Passive)
+            if (definition.ActivationType != SkillActivationType.Passive ||
+                HasPassiveRuntime(entry.Runtime))
+            {
                 continue;
+            }
 
-            var passive = new PassiveSkillRuntime(owner, runtime);
+            var passive = new PassiveSkillRuntime(owner, entry.Runtime);
             passive.Enable();
             _passiveSkills.Add(passive);
         }
     }
 
+    public PlayerSkillEntry GetSkillEntry(int slot)
+    {
+        return IsValidSlot(slot)
+            ? SkillCollection.Get(_owner.GetSkillAt((SkillSlot)slot))
+            : null;
+    }
+
     public SkillRuntime GetSkill(int slot)
     {
-        return slot >= 0 && slot < _skills.Length
-            ? _skills[slot]
-            : null;
+        return GetSkillEntry(slot)?.Runtime;
     }
 
     public void Tick(float deltaTime)
     {
-        foreach (SkillRuntime skill in _skills)
-            skill?.Tick(deltaTime);
+        foreach (PlayerSkillEntry entry in SkillCollection.Entries)
+            entry.Runtime.Tick(deltaTime);
     }
 
     public SkillUseFailure TryBeginUse(int slot)
     {
-        SkillRuntime runtime = GetSkill(slot);
-
-        if (slot < 0 || slot >= _skills.Length)
+        if (!IsValidSlot(slot))
             return Fail(slot, SkillUseFailure.InvalidSlot);
 
-        if (runtime == null || runtime.Definition == null)
+        PlayerSkillEntry entry = GetSkillEntry(slot);
+
+        if (entry == null || entry.Definition == null)
             return Fail(slot, SkillUseFailure.NotEquipped);
 
-        SkillDefinition definition = runtime.Definition;
+        if (!entry.IsUnlocked)
+            return Fail(slot, SkillUseFailure.SkillLocked);
+
+        SkillRuntime runtime = entry.Runtime;
+        SkillDefinition definition = entry.Definition;
 
         if (definition.ActivationType != SkillActivationType.Active)
             return Fail(slot, SkillUseFailure.PassiveSkill);
@@ -266,5 +281,21 @@ public sealed class PlayerSkillController : IDisposable
     {
         _activeDeliveryHandle?.Stop();
         _activeDeliveryHandle = null;
+    }
+
+    private bool HasPassiveRuntime(SkillRuntime runtime)
+    {
+        foreach (PassiveSkillRuntime passive in _passiveSkills)
+        {
+            if (ReferenceEquals(passive.Definition, runtime.Definition))
+                return true;
+        }
+
+        return false;
+    }
+
+    private static bool IsValidSlot(int slot)
+    {
+        return slot >= 0 && slot < PlayerManager.SkillBarSlotCount;
     }
 }
