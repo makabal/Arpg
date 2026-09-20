@@ -539,7 +539,7 @@ Codex 应以仓库实际依赖关系为准，不应只机械修改上述文件�
 
 - 静态确认：运行时技能栏链路与 `SkillSlot.prefab` 已无 `IsUnlocked`、`SetUnlocked`、`UnlockChanged`、`SkillLocked`、`lockImage` 或 `LockImage` 残留；训练场仍保留六个 `SkillSlot` Prefab 实例，未见 `Missing Script` 或空脚本引用。
 - 编译确认：已通过现有 Unity Editor 日志确认；本次相关脚本导入后出现 `Tundra build success`，其后未出现新的 C# 编译错误。
-- Unity Play Mode 验证：未验证。
+- Unity Play Mode 验证：开发者已人工验证通过。
 
 #### Git 信息
 
@@ -551,13 +551,13 @@ Push: 未完成；环境安全策略拒绝向未验证归属的 `origin/main` �
 
 #### 已知问题
 
-- Unity Editor 编译与 Play Mode 尚未在本次环境执行；数字键 1–6、鼠标输入、冷却和持续技能路径保留现有实现但未进行端到端运行验证。
+- Unity Editor 编译由现有日志确认；数字键 1–6、鼠标输入、冷却和持续技能路径已由开发者在 Unity Play Mode 中人工验证通过。
 
 ### 验收反馈
 
 - 2026-09-20：Sol 主管已核对实现提交范围、运行时代码、Prefab 本地引用、训练场六槽实例和 Unity 最终编译日志。
 - 验收结论：`ACCEPTED`。
-- Play Mode 中的鼠标点击、数字键、持续施法和冷却表现仍归入后续端到端人工验证，不将其表述为本次已验证。
+- Play Mode 中的鼠标点击、数字键、持续施法和冷却表现已由开发者人工验证通过。
 
 ---
 
