@@ -1,8 +1,12 @@
 # 剑刃旋风 / Blade Whirlwind
 
-## Final prototype-exact animation
+> 状态：**美术原型 / Archive**。当前项目运行时技能定义中不要把本目录视为已接入技能。
 
-Use `PrototypeExact/Warrior_BladeWhirlwind_Exact_6F.png`.
+## Prototype-exact animation
+
+可用的原型动画为：
+
+`PrototypeExact/Warrior_BladeWhirlwind_Exact_6F.png`
 
 - Layout: 6 horizontal frames
 - Frame size: 192×192
@@ -12,7 +16,7 @@ Use `PrototypeExact/Warrior_BladeWhirlwind_Exact_6F.png`.
 - Strongest visual frame: frame 4
 - Character and slash VFX are combined
 
-The six frames are assembled without repainting the warrior:
+六帧由现有角色动作组合而成：
 
 1. Attack2 frame 1 — anticipation
 2. Attack2 frame 2 — initial swing
@@ -21,16 +25,18 @@ The six frames are assembled without repainting the warrior:
 5. Attack1 frame 4 — follow-through
 6. Idle frame 1 — recovery
 
-Separate final frames are under `PrototypeExact/Frames/`.
+独立帧位于 `PrototypeExact/Frames/`。
 
-## Skill icon
+## Runtime status
 
-Use:
+此前 README 指向的运行时图标路径：
 
-`Assets/Resources/UI/SkillSystem/Skills/BladeWhirlwind/Icons/Skill_BladeWhirlwind_Icon_PrototypeExact_256.png`
+`Assets/Resources/UI/SkillSystem/Skills/BladeWhirlwind/...`
 
-The icon is extracted from the original Attack2 spin frame. The earlier generated icon can remain as a concept alternative but is not the prototype-exact default.
+已经不存在，因此不再作为有效资源路径。
 
-## Draft notice
+如果未来正式启用 Blade Whirlwind，应重新创建对应的 `SkillDefinition`、运行时图标和必要配置，并按当时的技能系统结构接入，而不是恢复旧路径。
 
-The `Combined/` folder and the earlier separate Player/VFX folders are generated drafts. Do not use them for the final character animation because they redraw the character.
+## Draft assets
+
+`Combined/` 以及更早的 Player/VFX 组合方案属于生成草稿，不作为当前正式角色动画来源。需要继续使用本技能原型时，优先参考 `PrototypeExact/`。
