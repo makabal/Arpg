@@ -430,7 +430,7 @@ README
 ## Task
 
 **ID:** ARPG-20260921-02
-**Status:** IN_PROGRESS
+**Status:** REVIEW
 **Title:** 技能成长、升级分支与 Buff 运行时基础
 
 ### 目标
@@ -471,7 +471,7 @@ README
 
 ```text
 Branch: main
-Commit: 未提交
+Commit: 270ceb6
 ```
 
 ### 已知限制
