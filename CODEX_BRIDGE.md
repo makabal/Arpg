@@ -429,6 +429,71 @@ README
 
 ## Task
 
+**ID:** ARPG-20260921-01
+**Status:** IN_PROGRESS
+**Title:** Tab 多页面界面与技能页面视觉基础
+
+### 目标
+
+接入 `Tab` 键控制的 `TabPag` 界面，为角色、背包、技能、任务、地图和设置建立顶部页签与页面切换基础，并继续搭建技能页面视觉结构。
+
+### 已确认行为
+
+- `Tab` 切换 `TabPag` 显隐。
+- 打开时默认选择 `Character`。
+- 角色页面暂未制作，默认角色页内容允许为空。
+- `TopBar` 保持为 `TabPag` 的兄弟节点，不随 `TabPag` 一起隐藏。
+- 技能点、重置按钮、图例和操作说明本次只完成视觉结构，不实现业务逻辑。
+
+### 实现摘要
+
+- 为 Input System 增加 `Tab` Action 和 `<Keyboard>/tab` 绑定，并重新生成 `New Actions.cs`。
+- 新增 `TabPageToggleController`，在常驻 UI Canvas 上监听 Tab，控制 `TabPag` 并在打开时选择 `Character`。
+- 新增顶部页签 Item、View、Group 及页面 Group、Item，支持六类页面的选中状态和显隐切换。
+- 新增 `Tab_Btn` Prefab、顶部栏资源，并在训练场搭建顶部栏与技能页面视觉节点。
+- 技能页面新增技能点、重置按钮、图例和操作说明视觉资源。
+
+### 关键修改文件
+
+- `Assets/New Actions.inputactions`
+- `Assets/New Actions.cs`
+- `Assets/Scripts/UI/TabPageToggleController.cs`
+- `Assets/Scripts/UI/TopBar/`
+- `Assets/Scripts/UI/TopBarPageGroup.cs`
+- `Assets/Scripts/UI/TopBarPageItem.cs`
+- `Assets/Prefab/UI/Tab_Btn.prefab`
+- `Assets/Scenes/TrainingGround.unity`
+- `Assets/Resources/UI/TopBar/`
+- `Assets/Resources/UI/SkillSystem/SkillTreePanel/`
+
+### 验证状态
+
+- [x] 静态确认 Tab Action、场景组件与序列化引用存在且对应正确。
+- [x] 静态确认打开逻辑固定选择 `TopBarPage.Character`。
+- [ ] Unity C# 编译确认。
+- [ ] Unity Play Mode 验证 Tab 开关、默认角色页和六页签点击。
+- [ ] 检查 Console 无新增异常。
+
+### Git 信息
+
+```text
+Branch: main
+Commit: 未提交
+```
+
+### 已知限制
+
+- `CharacterPage` 尚未创建，选择角色页时内容区域为空。
+- 当前只有 `SkillPage` 视觉内容，其他页面尚未实现。
+- 技能点数、重置按钮、解锁、升级和拖拽装配均未接入运行时逻辑。
+- `Tab_Btn.prefab` 中 `TopBarTabView` 的三个引用仍为空；训练场六个实例均通过 Override 补齐，但直接复用基础 Prefab 可能产生空引用。
+
+---
+
+# 历史任务
+
+## Task
+
 **ID:** ARPG-20260920-01  
 **Status:** ACCEPTED
 **Title:** 技能栏职责清理
@@ -561,15 +626,15 @@ Push: 未完成；环境安全策略拒绝向未验证归属的 `origin/main` �
 
 ---
 
-## 历史任务
+## 历史任务索引
 
 完成的任务可以从“当前任务”移动到这里。
 
 建议每条只保留摘要：
 
 ```text
-ARPG-20260920-01 | ACCEPTED | 技能栏运行时 UI
-Commit: abcdef1
+ARPG-20260920-01 | ACCEPTED | 技能栏职责清理
+Commit: 7468568
 ```
 
 详细实现历史以 Git commit 为准。

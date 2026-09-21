@@ -19,6 +19,8 @@
 - 组合式技能系统。
 - 持续技能“剑刃风暴”。
 - 六槽技能栏第一版运行时接入。
+- `Tab` 键控制的多页面界面、顶部六页签与页面切换基础逻辑（待 Unity 验收）。
+- 技能页面视觉初稿，包括技能点、重置按钮、图例和操作说明。
 - 训练木桩与基础战斗验证场景。
 
 ## 2. 技术环境
@@ -46,9 +48,13 @@ WASD → 移动
 6 → Skill5
 
 鼠标左键 → 场景目标选择 / UI 技能槽点击
+
+Tab → 打开或关闭 TabPag；打开时默认选择 Character
 ```
 
 剑刃风暴为持续技能：按住对应输入维持，松开结束。
+
+当前角色页面尚未制作，因此默认选择 `Character` 时内容区域暂时为空。
 
 ## 4. 核心运行架构
 
@@ -131,11 +137,18 @@ SkillSlotView
 - 1–6 快捷键显示。
 - 鼠标技能槽输入。
 - 冷却遮罩。
+- `TabPag` 显隐控制。
+- 顶部六页签选中表现和页面切换基础逻辑。
+- 技能页面视觉初稿、技能点区域、重置按钮、图例和操作说明。
 
 主要代码：
 
 - `Assets/Scripts/UI/SkillBar/SkillSlotView.cs`
 - `Assets/Scripts/UI/SkillBar/SkillSlotButton.cs`
+- `Assets/Scripts/UI/TabPageToggleController.cs`
+- `Assets/Scripts/UI/TopBar/TopBarTabGroup.cs`
+- `Assets/Scripts/UI/TopBar/TopBarTabView.cs`
+- `Assets/Scripts/UI/TopBarPageGroup.cs`
 
 主要 Prefab：
 
@@ -143,7 +156,9 @@ SkillSlotView
 
 “技能栏职责清理”（ARPG-20260920-01）已完成验收（ACCEPTED）：SkillBar / SkillSlotView 只负责当前装备技能的图标、空槽、冷却、快捷键和输入；技能解锁、允许装备与锁定展示不再属于技能栏运行时链路。技能解锁最终归属未来技能界面 / 技能树。
 
-技能树界面当前仅加入视觉参考、背景资源和 `TrainingGround` 中的 `SkillTreePanel` 初步场景节点，尚未实现技能点、等级、分支、解锁、拖拽装配或其他运行时逻辑，也尚未完成 Unity Play Mode 验收。
+技能界面当前加入了视觉参考、背景资源和 `TrainingGround` 中的 `TabPag / PageBox / SkillPage` 场景节点，尚未实现技能点、等级、分支、解锁、拖拽装配或其他运行时逻辑，也尚未完成 Unity Play Mode 验收。
+
+多页面界面当前行为：`TabPageToggleController` 只切换 `TabPag`；打开时由顶部页签组选择 `Character`。`TopBar` 是 `TabPag` 的兄弟节点，不随 `TabPag` 一起隐藏。场景目前只有 `SkillPage` 视觉内容，没有 `CharacterPage`，因此默认角色页内容为空。本批页签、输入和场景变更尚未完成 Unity 编译与 Play Mode 验收。
 
 ## 6. 当前技能
 
@@ -196,7 +211,8 @@ YooAsset 已安装，但正式运行时资源加载流程尚未完整接管 Reso
 
 ## 9. 当前主要未完成内容
 
-- 技能面板和技能树。
+- 角色页面及其他顶部页签对应页面。
+- 技能面板和技能树的运行时数据、技能点、重置和解锁逻辑。
 - 超过 6 个技能后的拖拽装配。
 - 普通敌人 AI。
 - 物品、装备和背包。
@@ -279,6 +295,8 @@ README
 
 ## 13. 最近同步记录
 
+- 2026-09-21：将项目 Git 规则统一为根目录下依次执行 `status → pull --rebase origin main → add . → commit → push origin main`；失败时停止并报告，不自行增加额外 Git 操作。
+- 2026-09-21：同步 `Tab` Action、`TabPag` 显隐、顶部六页签、默认角色页和技能页面视觉初稿；角色页及技能点/重置业务逻辑尚未实现，本批变更待 Unity 验收。
 - 2026-09-20：同步根 README 的技能栏完成状态，并记录普通攻击图标与技能树界面初步资源/场景节点；技能树功能仍未完成或验收。
 - 2026-09-20：开发者确认 ARPG-20260920-01 的 Unity Play Mode 人工验证已通过。
 - 2026-09-20：ARPG-20260920-01「技能栏职责清理」已通过 READY 前确认表格，正式进入 READY。

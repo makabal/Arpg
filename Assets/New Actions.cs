@@ -154,6 +154,15 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Tab"",
+                    ""type"": ""Button"",
+                    ""id"": ""892e2b0d-2d91-4fba-9765-df92606fe5a4"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -277,6 +286,17 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
                     ""action"": ""Skill2"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fccffcb0-4428-4899-b7c2-8177769ce6bb"",
+                    ""path"": ""<Keyboard>/tab"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Tab"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -292,6 +312,7 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
         m_player_Skill3 = m_player.FindAction("Skill3", throwIfNotFound: true);
         m_player_Skill4 = m_player.FindAction("Skill4", throwIfNotFound: true);
         m_player_Skill5 = m_player.FindAction("Skill5", throwIfNotFound: true);
+        m_player_Tab = m_player.FindAction("Tab", throwIfNotFound: true);
     }
 
     ~@NewActions()
@@ -379,6 +400,7 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_player_Skill3;
     private readonly InputAction m_player_Skill4;
     private readonly InputAction m_player_Skill5;
+    private readonly InputAction m_player_Tab;
     /// <summary>
     /// Provides access to input actions defined in input action map "player".
     /// </summary>
@@ -418,6 +440,10 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "player/Skill5".
         /// </summary>
         public InputAction @Skill5 => m_Wrapper.m_player_Skill5;
+        /// <summary>
+        /// Provides access to the underlying input action "player/Tab".
+        /// </summary>
+        public InputAction @Tab => m_Wrapper.m_player_Tab;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -465,6 +491,9 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
             @Skill5.started += instance.OnSkill5;
             @Skill5.performed += instance.OnSkill5;
             @Skill5.canceled += instance.OnSkill5;
+            @Tab.started += instance.OnTab;
+            @Tab.performed += instance.OnTab;
+            @Tab.canceled += instance.OnTab;
         }
 
         /// <summary>
@@ -497,6 +526,9 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
             @Skill5.started -= instance.OnSkill5;
             @Skill5.performed -= instance.OnSkill5;
             @Skill5.canceled -= instance.OnSkill5;
+            @Tab.started -= instance.OnTab;
+            @Tab.performed -= instance.OnTab;
+            @Tab.canceled -= instance.OnTab;
         }
 
         /// <summary>
@@ -586,5 +618,12 @@ public partial class @NewActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnSkill5(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Tab" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnTab(InputAction.CallbackContext context);
     }
 }
