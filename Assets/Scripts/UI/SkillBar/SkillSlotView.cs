@@ -102,7 +102,7 @@ public sealed class SkillSlotView : MonoBehaviour
         _runtime.CooldownChanged += SetCooldown;
         SetCooldown(
             _runtime.RemainingCooldown,
-            _entry.Definition.Cooldown);
+            _runtime.TotalCooldown);
     }
 
     private void SetEmptyState()

@@ -41,9 +41,15 @@ public sealed class ProjectileDelivery : SkillDelivery
         projectile.Initialize(
             context,
             targetLayers,
-            speed,
-            lifetime,
-            maxHits,
+            context.Build.GetNumeric(
+                SkillNumericStat.ProjectileSpeed,
+                speed),
+            context.Build.GetNumeric(
+                SkillNumericStat.ProjectileLifetime,
+                lifetime),
+            context.Build.GetInt(
+                SkillNumericStat.ProjectileMaxHits,
+                maxHits),
             destroyWhenMaxHitsReached);
 
         // 投射物发射后独立存在，不随施法状态结束而销毁。

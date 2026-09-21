@@ -31,9 +31,7 @@ PlayerSkillCollection
 = 玩家当前拥有 / 可使用的全部技能及其运行时数据
 ```
 
-当前实现暂时只从六槽 SkillBar 中注册技能，这是现阶段实现状态，不是最终职责。
-
-当开始技能树、技能面板或技能数量超过 6 个时，应把 Collection 的初始化来源与 SkillBar 拆分。
+`PlayerSkillCollection` 由玩家技能成长数据初始化，支持技能动态注册与移除，不再由六槽 SkillBar 创建。
 
 ## SkillBar
 
@@ -69,6 +67,32 @@ SkillBar **不负责技能解锁**。
 - 技能等级。
 - 技能分支。
 - 战斗判定。
+
+## 技能成长与升级分支
+
+```text
+SkillTreeDefinition / SkillUpgradeNodeDefinition
+        ↓
+PlayerSkillProgression
+        ↓
+SkillBuildSnapshot
+        ↓
+技能释放
+```
+
+- `PlayerSkillProgression` 管理技能点、节点等级、前置条件、互斥分支和重置。
+- `SkillUpgradeModifier` 描述数值变化、效果增减和形态替换。
+- 技能释放时生成 `SkillBuildSnapshot`；不修改原始 ScriptableObject。
+- 技能点变化通过方法执行，通过事件通知 UI 和存档系统。
+- 存档使用稳定的 `nodeId` / `skillId`，不保存 Unity 资源引用。
+
+## Buff
+
+- `BuffDefinition` 保存静态配置。
+- `BuffInstance` 保存层数、剩余时间、来源和强度等运行时数据。
+- `BuffController` 负责施加、刷新、叠层、移除和计时。
+- 技能通过 `ApplyBuffSkillEffect` 施加 Buff。
+- 临时 Buff 默认不进入角色永久存档。
 
 ## 输入映射
 

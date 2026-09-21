@@ -1,23 +1,30 @@
+using System;
 using UnityEngine;
 
 public sealed class PlayerMovement
 {
     private readonly Rigidbody2D _rigidbody;
     private readonly Transform _transform;
-    private readonly float _moveSpeed;
+    private readonly Func<float> _moveSpeedProvider;
     private int _facing;
 
-    public PlayerMovement(Rigidbody2D rigidbody, Transform transform, float moveSpeed)
+    public PlayerMovement(
+        Rigidbody2D rigidbody,
+        Transform transform,
+        Func<float> moveSpeedProvider)
     {
         _rigidbody = rigidbody;
         _transform = transform;
-        _moveSpeed = moveSpeed;
+        _moveSpeedProvider = moveSpeedProvider;
         _facing = transform.localScale.x >= 0f ? 1 : -1;
     }
 
     public void FixedTick(Vector2 moveInput)
     {
-        _rigidbody.velocity = moveInput * _moveSpeed;
+        float moveSpeed = _moveSpeedProvider != null
+            ? Mathf.Max(0f, _moveSpeedProvider())
+            : 0f;
+        _rigidbody.velocity = moveInput * moveSpeed;
         UpdateFacing(moveInput.x);
     }
 

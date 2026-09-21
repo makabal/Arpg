@@ -5,6 +5,7 @@ public sealed class SkillRuntime
 {
     public SkillDefinition Definition { get; }
     public float RemainingCooldown { get; private set; }
+    public float TotalCooldown { get; private set; }
     public bool IsReady => RemainingCooldown <= 0f;
 
     public event Action<float, float> CooldownChanged;
@@ -28,18 +29,17 @@ public sealed class SkillRuntime
         {
             CooldownChanged?.Invoke(
                 RemainingCooldown,
-                Definition != null ? Definition.Cooldown : 0f);
+                TotalCooldown);
         }
     }
 
-    public void StartCooldown()
+    public void StartCooldown(float duration)
     {
-        RemainingCooldown = Definition != null
-            ? Definition.Cooldown
-            : 0f;
+        TotalCooldown = Mathf.Max(0f, duration);
+        RemainingCooldown = TotalCooldown;
 
         CooldownChanged?.Invoke(
             RemainingCooldown,
-            Definition != null ? Definition.Cooldown : 0f);
+            TotalCooldown);
     }
 }

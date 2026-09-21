@@ -5,6 +5,7 @@ using UnityEngine;
 public sealed class PassiveSkillRuntime : IDisposable
 {
     private readonly SkillRuntime _runtime;
+    private readonly PlayerSkillProgression _progression;
     private IDisposable _binding;
 
     public PlayerManager Owner { get; }
@@ -12,10 +13,12 @@ public sealed class PassiveSkillRuntime : IDisposable
 
     public PassiveSkillRuntime(
         PlayerManager owner,
-        SkillRuntime runtime)
+        SkillRuntime runtime,
+        PlayerSkillProgression progression)
     {
         Owner = owner;
         _runtime = runtime;
+        _progression = progression;
     }
 
     public void Enable()
@@ -37,12 +40,16 @@ public sealed class PassiveSkillRuntime : IDisposable
         var aim = new SkillAimData(
             aimPosition,
             direction);
+        SkillBuildSnapshot build = _progression != null
+            ? _progression.BuildSkill(Definition)
+            : new SkillBuildBuilder(Definition).Build();
         var castContext = new SkillCastContext(
             Owner,
             Definition,
-            aim);
+            aim,
+            build);
 
-        foreach (SkillCondition condition in Definition.Conditions)
+        foreach (SkillCondition condition in build.Conditions)
         {
             if (condition != null &&
                 condition.Validate(castContext) != SkillUseFailure.None)
@@ -59,7 +66,9 @@ public sealed class PassiveSkillRuntime : IDisposable
 
         SkillExecution.ApplyEffects(hitContext);
 
-        _runtime.StartCooldown();
+        _runtime.StartCooldown(build.GetNumeric(
+            SkillNumericStat.Cooldown,
+            Definition.Cooldown));
         return true;
     }
 

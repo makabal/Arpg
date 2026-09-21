@@ -30,10 +30,27 @@ public sealed class PhysicsAreaTargetResolver : SkillTargetResolver
             ? request.AimPosition
             : casterPosition;
 
+        float effectiveRadius = request.Build.GetNumeric(
+            SkillNumericStat.AreaRadius,
+            radius);
+        float effectiveLength = request.Build.GetNumeric(
+            SkillNumericStat.AreaLength,
+            length);
+        float effectiveWidth = request.Build.GetNumeric(
+            SkillNumericStat.AreaWidth,
+            width);
+        float effectiveAngle = request.Build.GetNumeric(
+            SkillNumericStat.AreaAngle,
+            angle);
+
         Collider2D[] hits = FindHits(
             casterPosition,
             areaOrigin,
-            request.Direction);
+            request.Direction,
+            effectiveRadius,
+            effectiveLength,
+            effectiveWidth,
+            effectiveAngle);
 
         var added = new HashSet<IDamageable>();
 
@@ -60,24 +77,29 @@ public sealed class PhysicsAreaTargetResolver : SkillTargetResolver
     private Collider2D[] FindHits(
         Vector2 casterPosition,
         Vector2 areaOrigin,
-        Vector2 direction)
+        Vector2 direction,
+        float effectiveRadius,
+        float effectiveLength,
+        float effectiveWidth,
+        float effectiveAngle)
     {
         if (shape == SkillAreaShape.Line)
         {
-            Vector2 center = casterPosition + direction * (length * 0.5f);
+            Vector2 center = casterPosition +
+                direction * (effectiveLength * 0.5f);
             float rotation = Mathf.Atan2(direction.y, direction.x) *
                 Mathf.Rad2Deg;
 
             return Physics2D.OverlapBoxAll(
                 center,
-                new Vector2(length, width),
+                new Vector2(effectiveLength, effectiveWidth),
                 rotation,
                 targetLayers);
         }
 
         float searchRadius = shape == SkillAreaShape.Cone
-            ? length
-            : radius;
+            ? effectiveLength
+            : effectiveRadius;
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             areaOrigin,
@@ -94,8 +116,10 @@ public sealed class PhysicsAreaTargetResolver : SkillTargetResolver
             Vector2 toTarget =
                 (Vector2)hit.bounds.center - casterPosition;
 
-            if (toTarget.sqrMagnitude <= length * length &&
-                Vector2.Angle(direction, toTarget) <= angle * 0.5f)
+            if (toTarget.sqrMagnitude <=
+                    effectiveLength * effectiveLength &&
+                Vector2.Angle(direction, toTarget) <=
+                    effectiveAngle * 0.5f)
             {
                 filtered.Add(hit);
             }

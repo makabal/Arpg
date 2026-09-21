@@ -17,7 +17,7 @@ public sealed class PlayerSkillState : PlayerState
         _elapsed = 0f;
 
         _activePresentation =
-            Owner.Skills.ActiveDefinition?.Presentation;
+            Owner.Skills.ActiveBuild?.Presentation;
 
         Owner.Animation.PlaySkillAnimation(_activePresentation);
 
@@ -27,6 +27,12 @@ public sealed class PlayerSkillState : PlayerState
 
     public override void Update()
     {
+        if (Owner.Buffs != null && Owner.Buffs.HasTag(BuffTag.Stun))
+        {
+            StateMachine.ChangeState(Owner.NormalState);
+            return;
+        }
+
         SkillDefinition definition = Owner.Skills.ActiveDefinition;
 
         if (definition == null)
@@ -40,11 +46,19 @@ public sealed class PlayerSkillState : PlayerState
 
         _elapsed += Time.deltaTime;
 
-        bool usesAnimationEvents = UsesAnimationEvents(definition);
+        bool usesAnimationEvents = UsesAnimationEvents(
+            definition,
+            Owner.Skills.ActiveBuild?.Presentation);
+        float effectTime = Owner.Skills.ActiveBuild.GetNumeric(
+            SkillNumericStat.CastEffectTime,
+            definition.CastSettings.EffectTime);
+        float totalDuration = Owner.Skills.ActiveBuild.GetNumeric(
+            SkillNumericStat.CastTotalDuration,
+            definition.CastSettings.TotalDuration);
 
         if (!usesAnimationEvents &&
             !Owner.Skills.ActiveSkillReleased &&
-            _elapsed >= definition.CastSettings.EffectTime)
+            _elapsed >= effectTime)
         {
             Owner.Skills.ReleaseActiveSkill();
         }
@@ -57,8 +71,8 @@ public sealed class PlayerSkillState : PlayerState
             bool hasEnoughMana = !isHeld ||
                 Owner.Skills.TryMaintainChannel(Time.deltaTime);
             bool reachedMaximumDuration =
-                definition.CastSettings.TotalDuration > 0f &&
-                _elapsed >= definition.CastSettings.TotalDuration;
+                totalDuration > 0f &&
+                _elapsed >= totalDuration;
 
             if (!isHeld || !hasEnoughMana || reachedMaximumDuration)
                 FinishSkill();
@@ -69,7 +83,7 @@ public sealed class PlayerSkillState : PlayerState
         if (usesAnimationEvents)
             return;
 
-        if (_elapsed < definition.CastSettings.TotalDuration)
+        if (_elapsed < totalDuration)
             return;
 
         Owner.Skills.ReleaseActiveSkill();
@@ -114,12 +128,13 @@ public sealed class PlayerSkillState : PlayerState
     }
 
     private static bool UsesAnimationEvents(
-        SkillDefinition definition)
+        SkillDefinition definition,
+        SkillPresentationData presentation)
     {
         return definition.CastSettings.ReleaseMode ==
                 SkillReleaseMode.AnimationEvents &&
-            definition.Presentation != null &&
+            presentation != null &&
             !string.IsNullOrWhiteSpace(
-                definition.Presentation.AnimationParameter);
+                presentation.AnimationParameter);
     }
 }

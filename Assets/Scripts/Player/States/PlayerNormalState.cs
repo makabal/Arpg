@@ -9,6 +9,12 @@ public sealed class PlayerNormalState : PlayerState
 
     public override void Update()
     {
+        if (Owner.Buffs != null && Owner.Buffs.HasTag(BuffTag.Stun))
+        {
+            Owner.StopMovement();
+            return;
+        }
+
         Owner.ReadMovementInput();
 
         if (Owner.Input.TryGetPressedSkillSlot(out SkillSlot slot))
@@ -17,6 +23,9 @@ public sealed class PlayerNormalState : PlayerState
 
     public override void FixedUpdate()
     {
-        Owner.ApplyMovement();
+        if (Owner.Buffs != null && Owner.Buffs.HasTag(BuffTag.Stun))
+            Owner.StopMovement();
+        else
+            Owner.ApplyMovement();
     }
 }

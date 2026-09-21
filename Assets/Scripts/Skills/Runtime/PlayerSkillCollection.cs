@@ -21,6 +21,7 @@ public sealed class PlayerSkillCollection
     public IEnumerable<PlayerSkillEntry> Entries => _entries.Values;
 
     public event Action<PlayerSkillEntry> SkillRegistered;
+    public event Action<PlayerSkillEntry> SkillUnregistered;
 
     public PlayerSkillEntry Register(SkillDefinition definition)
     {
@@ -44,5 +45,23 @@ public sealed class PlayerSkillCollection
         return _entries.TryGetValue(definition, out PlayerSkillEntry entry)
             ? entry
             : null;
+    }
+
+    public bool Contains(SkillDefinition definition)
+    {
+        return definition != null && _entries.ContainsKey(definition);
+    }
+
+    public bool Unregister(SkillDefinition definition)
+    {
+        if (definition == null ||
+            !_entries.TryGetValue(definition, out PlayerSkillEntry entry))
+        {
+            return false;
+        }
+
+        _entries.Remove(definition);
+        SkillUnregistered?.Invoke(entry);
+        return true;
     }
 }

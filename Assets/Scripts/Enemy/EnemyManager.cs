@@ -2,7 +2,7 @@ using UnityEngine;
 
 [DisallowMultipleComponent]
 [RequireComponent(typeof(Animator))]
-public sealed class EnemyManager : MonoBehaviour, IDamageable
+public sealed class EnemyManager : MonoBehaviour, IDamageable, IBuffReceiver
 {
     [Header("基本信息")]
     [SerializeField] private string displayName = "Enemy";
@@ -13,6 +13,7 @@ public sealed class EnemyManager : MonoBehaviour, IDamageable
 
     public string DisplayName => displayName;
     public Health Health { get; private set; }
+    public BuffController Buffs { get; private set; }
     internal EnemyAnimationController Animation { get; private set; }
     internal EnemyIdleState IdleState { get; private set; }
     internal EnemyHitState HitState { get; private set; }
@@ -22,6 +23,7 @@ public sealed class EnemyManager : MonoBehaviour, IDamageable
     private void Awake()
     {
         Health = new Health(maxHealth, healthMode);
+        Buffs = new BuffController(this);
         Animation = new EnemyAnimationController(GetComponent<Animator>());
 
         _stateMachine = new StateMachine<EnemyManager>();
@@ -35,6 +37,7 @@ public sealed class EnemyManager : MonoBehaviour, IDamageable
 
     private void Update()
     {
+        Buffs?.Tick(Time.deltaTime);
         _stateMachine.Update();
     }
 
@@ -47,10 +50,14 @@ public sealed class EnemyManager : MonoBehaviour, IDamageable
     {
         Health.Damaged -= OnDamaged;
         Health.Died -= OnDied;
+        Buffs?.Clear();
     }
 
     public void TakeDamage(int damage)
     {
+        if (Buffs != null && Buffs.HasTag(BuffTag.Invulnerable))
+            return;
+
         Health.TakeDamage(damage);
     }
 

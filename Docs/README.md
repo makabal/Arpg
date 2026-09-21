@@ -36,3 +36,4 @@
 ### Decisions
 
 - `ADR-001-SKILL-COLLECTION-AND-HOTBAR.md`：PlayerSkillCollection 与六槽 SkillBar 的职责划分。
+- `ADR-002-SKILL-PROGRESSION-AND-BUFFS.md`：技能点、升级分支、有效技能构建与 Buff 的职责划分。

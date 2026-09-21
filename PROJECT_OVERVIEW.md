@@ -17,6 +17,9 @@
 - 玩家与目标 HUD。
 - 状态机。
 - 组合式技能系统。
+- 技能点、升级节点、前置/互斥分支和 JSON 进度 DTO 的运行时基础。
+- 数值升级、技能形态替换、附加效果与 Buff 的有效技能构建链路。
+- 通用 Buff 定义、叠层、持续时间、属性修正和周期伤害/治疗基础。
 - 持续技能“剑刃风暴”。
 - 六槽技能栏第一版运行时接入。
 - `Tab` 键控制的多页面界面、顶部六页签与页面切换基础逻辑（待 Unity 验收）。
@@ -67,6 +70,10 @@ PlayerManager
 ├─ PlayerAnimator
 ├─ Health
 ├─ ResourcePool
+├─ CharacterStatsRuntime
+├─ BuffController
+├─ PlayerSkillProgression
+├─ PlayerSkillCollection
 ├─ PlayerSkillController
 └─ StateMachine<PlayerManager>
    ├─ PlayerNormalState
@@ -94,6 +101,8 @@ SkillDefinition
 
 - `SkillDefinition`：静态技能定义。
 - `SkillRuntime`：冷却等玩家独立运行时状态。
+- `PlayerSkillProgression`：技能点、节点等级、前置、互斥、购买和重置。
+- `SkillBuildSnapshot`：组合基础技能与升级后的最终数值、效果和形态。
 - `PlayerSkillController`：技能使用校验、释放、持续、冷却和资源消耗。
 - `SkillCastContext / SkillHitContext`：一次施法与命中的上下文。
 
@@ -101,7 +110,7 @@ ScriptableObject 不保存玩家当前局运行时状态。
 
 ### Skill Collection 与 SkillBar
 
-当前代码中的 `PlayerSkillCollection` 暂时只从六槽技能栏中的技能注册运行时对象。
+`PlayerSkillCollection` 已从六槽技能栏拆分，由技能成长数据注册玩家拥有的技能；尚未配置技能树资产时，会兼容注册场景现有六槽技能，避免破坏训练场。
 
 长期设计已经确认：
 
@@ -121,9 +130,13 @@ SkillSlotView
 
 六槽 SkillBar 不负责技能解锁。
 
+升级节点通过 `SkillUpgradeModifier` 修改 `SkillBuildSnapshot`，支持数值加成、替换 Aim / Delivery / TargetResolver / Presentation，以及增加或移除 SkillEffect。技能可以通过 `ApplyBuffSkillEffect` 向实现 `IBuffReceiver` 的目标施加 Buff。
+
 详细决策见：
 
 `Docs/Decisions/ADR-001-SKILL-COLLECTION-AND-HOTBAR.md`
+
+`Docs/Decisions/ADR-002-SKILL-PROGRESSION-AND-BUFFS.md`
 
 ## 5. 当前 UI
 
@@ -156,7 +169,7 @@ SkillSlotView
 
 “技能栏职责清理”（ARPG-20260920-01）已完成验收（ACCEPTED）：SkillBar / SkillSlotView 只负责当前装备技能的图标、空槽、冷却、快捷键和输入；技能解锁、允许装备与锁定展示不再属于技能栏运行时链路。技能解锁最终归属未来技能界面 / 技能树。
 
-技能界面当前加入了视觉参考、背景资源和 `TrainingGround` 中的 `TabPag / PageBox / SkillPage` 场景节点，尚未实现技能点、等级、分支、解锁、拖拽装配或其他运行时逻辑，也尚未完成 Unity Play Mode 验收。
+技能界面当前加入了视觉参考、背景资源和 `TrainingGround` 中的 `TabPag / PageBox / SkillPage` 场景节点。技能点、升级分支和重置的运行时领域代码已经建立，但尚未创建实际技能树配置资产，也未把节点按钮、技能点文本和重置按钮绑定到运行时接口。
 
 多页面界面当前行为：`TabPageToggleController` 只切换 `TabPag`；打开时由顶部页签组选择 `Character`。`TopBar` 是 `TabPag` 的兄弟节点，不随 `TabPag` 一起隐藏。场景目前只有 `SkillPage` 视觉内容，没有 `CharacterPage`，因此默认角色页内容为空。本批页签、输入和场景变更尚未完成 Unity 编译与 Play Mode 验收。
 
@@ -202,6 +215,7 @@ SkillSlotView
 
 - ScriptableObject：静态配置。
 - Runtime 对象 / 运行时组件：当前局变化数据。
+- `CharacterSaveData / SkillProgressSaveData`：角色 JSON 中的技能点和节点等级 DTO。
 - `Assets/Art/`：制作源图、参考图、候选资源。
 - `Assets/Resources/`：当前仍使用 Resources 的运行时资源。
 - `Assets/Data/`：ScriptableObject 配置。
@@ -212,8 +226,9 @@ YooAsset 已安装，但正式运行时资源加载流程尚未完整接管 Reso
 ## 9. 当前主要未完成内容
 
 - 角色页面及其他顶部页签对应页面。
-- 技能面板和技能树的运行时数据、技能点、重置和解锁逻辑。
+- 技能树配置资产、UI 节点绑定和实际升级内容配置。
 - 超过 6 个技能后的拖拽装配。
+- Buff 图标栏、驱散、控制状态和更完整的战斗属性接入。
 - 普通敌人 AI。
 - 物品、装备和背包。
 - 正式存档。
@@ -295,6 +310,7 @@ README
 
 ## 13. 最近同步记录
 
+- 2026-09-21：新增技能点与升级分支运行时基础、有效技能构建快照、动态技能集合、角色 JSON 技能进度 DTO，以及通用 Buff/运行时属性链路；Unity C# 编译已通过，配置资产和 Play Mode 行为仍待验收。
 - 2026-09-21：将项目 Git 规则统一为根目录下依次执行 `status → pull --rebase origin main → add . → commit → push origin main`；失败时停止并报告，不自行增加额外 Git 操作。
 - 2026-09-21：同步 `Tab` Action、`TabPag` 显隐、顶部六页签、默认角色页和技能页面视觉初稿；角色页及技能点/重置业务逻辑尚未实现，本批变更待 Unity 验收。
 - 2026-09-20：同步根 README 的技能栏完成状态，并记录普通攻击图标与技能树界面初步资源/场景节点；技能树功能仍未完成或验收。

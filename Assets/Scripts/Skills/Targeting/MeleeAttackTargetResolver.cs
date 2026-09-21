@@ -21,9 +21,13 @@ public sealed class MeleeAttackTargetResolver : SkillTargetResolver
             ? attackPoint.position
             : request.Caster.transform.position;
 
+        float effectiveRadius = request.Build.GetNumeric(
+            SkillNumericStat.AreaRadius,
+            radius);
+
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             center,
-            radius,
+            effectiveRadius,
             targetLayers);
 
         var added = new HashSet<IDamageable>();

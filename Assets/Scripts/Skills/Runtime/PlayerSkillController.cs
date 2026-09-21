@@ -6,6 +6,7 @@ public sealed class PlayerSkillController : IDisposable
 {
     private readonly PlayerManager _owner;
     private readonly EnemyTargetSelector _targetSelector;
+    private readonly PlayerSkillProgression _progression;
     private readonly List<PassiveSkillRuntime> _passiveSkills =
         new List<PassiveSkillRuntime>();
 
@@ -17,6 +18,7 @@ public sealed class PlayerSkillController : IDisposable
     private ISkillDeliveryHandle _activeDeliveryHandle;
 
     public SkillDefinition ActiveDefinition => _activeSkill?.Definition;
+    public SkillBuildSnapshot ActiveBuild => _activeContext?.Build;
     public SkillCastContext ActiveContext => _activeContext;
     public bool HasActiveSkill => _activeSkill != null;
     public bool ActiveSkillReleased => _activeSkillReleased;
@@ -30,36 +32,21 @@ public sealed class PlayerSkillController : IDisposable
 
     public PlayerSkillController(
         PlayerManager owner,
-        IReadOnlyList<SkillDefinition> definitions,
-        EnemyTargetSelector targetSelector)
+        EnemyTargetSelector targetSelector,
+        PlayerSkillCollection skillCollection,
+        PlayerSkillProgression progression)
     {
         _owner = owner;
         _targetSelector = targetSelector;
-        SkillCollection = new PlayerSkillCollection();
+        SkillCollection = skillCollection ??
+            throw new ArgumentNullException(nameof(skillCollection));
+        _progression = progression;
 
-        for (int i = 0; i < PlayerManager.SkillBarSlotCount; i++)
-        {
-            SkillDefinition definition = definitions != null &&
-                i < definitions.Count
-                ? definitions[i]
-                : null;
+        SkillCollection.SkillRegistered += OnSkillRegistered;
+        SkillCollection.SkillUnregistered += OnSkillUnregistered;
 
-            if (definition == null)
-                continue;
-
-            PlayerSkillEntry entry =
-                SkillCollection.Register(definition);
-
-            if (definition.ActivationType != SkillActivationType.Passive ||
-                HasPassiveRuntime(entry.Runtime))
-            {
-                continue;
-            }
-
-            var passive = new PassiveSkillRuntime(owner, entry.Runtime);
-            passive.Enable();
-            _passiveSkills.Add(passive);
-        }
+        foreach (PlayerSkillEntry entry in SkillCollection.Entries)
+            EnablePassive(entry);
     }
 
     public PlayerSkillEntry GetSkillEntry(int slot)
@@ -92,6 +79,7 @@ public sealed class PlayerSkillController : IDisposable
 
         SkillRuntime runtime = entry.Runtime;
         SkillDefinition definition = entry.Definition;
+        SkillBuildSnapshot build = BuildSkill(definition);
 
         if (definition.ActivationType != SkillActivationType.Active)
             return Fail(slot, SkillUseFailure.PassiveSkill);
@@ -99,19 +87,29 @@ public sealed class PlayerSkillController : IDisposable
         if (_owner.Health.IsDead)
             return Fail(slot, SkillUseFailure.PlayerDead);
 
+        if (_owner.Buffs != null && _owner.Buffs.HasTag(BuffTag.Stun))
+            return Fail(slot, SkillUseFailure.CrowdControlled);
+
+        if (_owner.Buffs != null && _owner.Buffs.HasTag(BuffTag.Silence))
+            return Fail(slot, SkillUseFailure.Silenced);
+
         if (_activeSkill != null)
             return Fail(slot, SkillUseFailure.Busy);
 
         if (!runtime.IsReady)
             return Fail(slot, SkillUseFailure.OnCooldown);
 
-        if (_owner.Mana.CurrentValue < definition.ManaCost)
+        int manaCost = build.GetInt(
+            SkillNumericStat.ManaCost,
+            definition.ManaCost);
+
+        if (_owner.Mana.CurrentValue < manaCost)
             return Fail(slot, SkillUseFailure.NotEnoughMana);
 
-        if (definition.AimResolver == null)
+        if (build.AimResolver == null)
             return Fail(slot, SkillUseFailure.NoAimResolver);
 
-        if (definition.Delivery == null)
+        if (build.Delivery == null)
             return Fail(slot, SkillUseFailure.NoDelivery);
 
         Vector2 aimPosition = _targetSelector != null
@@ -124,9 +122,11 @@ public sealed class PlayerSkillController : IDisposable
                 ? _targetSelector.SelectedEnemy
                 : null,
             aimPosition,
-            definition.CastRange);
+            build.GetNumeric(
+                SkillNumericStat.CastRange,
+                definition.CastRange));
 
-        SkillUseFailure aimResult = definition.AimResolver.Resolve(
+        SkillUseFailure aimResult = build.AimResolver.Resolve(
             aimRequest,
             out SkillAimData aim);
 
@@ -136,9 +136,10 @@ public sealed class PlayerSkillController : IDisposable
         var context = new SkillCastContext(
             _owner,
             definition,
-            aim);
+            aim,
+            build);
 
-        foreach (SkillCondition condition in definition.Conditions)
+        foreach (SkillCondition condition in build.Conditions)
         {
             if (condition == null)
                 continue;
@@ -150,13 +151,13 @@ public sealed class PlayerSkillController : IDisposable
                 return Fail(slot, conditionResult);
         }
 
-        if (!_owner.Mana.TrySpend(definition.ManaCost))
+        if (!_owner.Mana.TrySpend(manaCost))
             return Fail(slot, SkillUseFailure.NotEnoughMana);
 
         if (definition.CastSettings.CooldownStartMode ==
             SkillCooldownStartMode.OnCastStart)
         {
-            runtime.StartCooldown();
+            runtime.StartCooldown(GetCooldown(build));
         }
 
         _activeSkill = runtime;
@@ -175,7 +176,7 @@ public sealed class PlayerSkillController : IDisposable
             return;
 
         _activeDeliveryHandle =
-            _activeSkill.Definition.Delivery.Deliver(_activeContext);
+            _activeContext.Build.Delivery.Deliver(_activeContext);
 
         _activeSkillReleased = true;
         SkillReleased?.Invoke(_activeSlot, _activeSkill);
@@ -194,7 +195,7 @@ public sealed class PlayerSkillController : IDisposable
         if (finishedSkill.Definition.CastSettings.CooldownStartMode ==
             SkillCooldownStartMode.OnSkillEnd)
         {
-            finishedSkill.StartCooldown();
+            finishedSkill.StartCooldown(GetCooldown(_activeContext.Build));
         }
 
         ClearActiveSkill();
@@ -218,7 +219,7 @@ public sealed class PlayerSkillController : IDisposable
         if (canceledSkill.Definition.CastSettings.CooldownStartMode ==
             SkillCooldownStartMode.OnSkillEnd)
         {
-            canceledSkill.StartCooldown();
+            canceledSkill.StartCooldown(GetCooldown(_activeContext.Build));
         }
 
         ClearActiveSkill();
@@ -229,8 +230,9 @@ public sealed class PlayerSkillController : IDisposable
         if (_activeSkill == null)
             return false;
 
-        float costPerSecond =
-            _activeSkill.Definition.ManaCostPerSecond;
+        float costPerSecond = _activeContext.Build.GetNumeric(
+            SkillNumericStat.ManaCostPerSecond,
+            _activeSkill.Definition.ManaCostPerSecond);
 
         if (costPerSecond <= 0f)
             return true;
@@ -250,6 +252,9 @@ public sealed class PlayerSkillController : IDisposable
 
     public void Dispose()
     {
+        SkillCollection.SkillRegistered -= OnSkillRegistered;
+        SkillCollection.SkillUnregistered -= OnSkillUnregistered;
+
         foreach (PassiveSkillRuntime passive in _passiveSkills)
             passive.Dispose();
 
@@ -289,6 +294,64 @@ public sealed class PlayerSkillController : IDisposable
         }
 
         return false;
+    }
+
+    private SkillBuildSnapshot BuildSkill(SkillDefinition definition)
+    {
+        return _progression != null
+            ? _progression.BuildSkill(definition)
+            : new SkillBuildBuilder(definition).Build();
+    }
+
+    private static float GetCooldown(SkillBuildSnapshot build)
+    {
+        return build != null && build.Definition != null
+            ? build.GetNumeric(
+                SkillNumericStat.Cooldown,
+                build.Definition.Cooldown)
+            : 0f;
+    }
+
+    private void OnSkillRegistered(PlayerSkillEntry entry)
+    {
+        EnablePassive(entry);
+    }
+
+    private void OnSkillUnregistered(PlayerSkillEntry entry)
+    {
+        if (entry == null)
+            return;
+
+        if (ReferenceEquals(_activeSkill, entry.Runtime))
+            CancelActiveSkill(true);
+
+        for (int i = _passiveSkills.Count - 1; i >= 0; i--)
+        {
+            PassiveSkillRuntime passive = _passiveSkills[i];
+            if (!ReferenceEquals(passive.Definition, entry.Definition))
+                continue;
+
+            passive.Dispose();
+            _passiveSkills.RemoveAt(i);
+        }
+    }
+
+    private void EnablePassive(PlayerSkillEntry entry)
+    {
+        if (entry == null ||
+            entry.Definition == null ||
+            entry.Definition.ActivationType != SkillActivationType.Passive ||
+            HasPassiveRuntime(entry.Runtime))
+        {
+            return;
+        }
+
+        var passive = new PassiveSkillRuntime(
+            _owner,
+            entry.Runtime,
+            _progression);
+        passive.Enable();
+        _passiveSkills.Add(passive);
     }
 
     private static bool IsValidSlot(int slot)

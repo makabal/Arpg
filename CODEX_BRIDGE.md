@@ -429,50 +429,43 @@ README
 
 ## Task
 
-**ID:** ARPG-20260921-01
+**ID:** ARPG-20260921-02
 **Status:** IN_PROGRESS
-**Title:** Tab 多页面界面与技能页面视觉基础
+**Title:** 技能成长、升级分支与 Buff 运行时基础
 
 ### 目标
 
-接入 `Tab` 键控制的 `TabPag` 界面，为角色、背包、技能、任务、地图和设置建立顶部页签与页面切换基础，并继续搭建技能页面视觉结构。
-
-### 已确认行为
-
-- `Tab` 切换 `TabPag` 显隐。
-- 打开时默认选择 `Character`。
-- 角色页面暂未制作，默认角色页内容允许为空。
-- `TopBar` 保持为 `TabPag` 的兄弟节点，不随 `TabPag` 一起隐藏。
-- 技能点、重置按钮、图例和操作说明本次只完成视觉结构，不实现业务逻辑。
+建立技能点、升级节点、数值/形态升级、Buff 和角色 JSON 技能进度的运行时基础，并将 `PlayerSkillCollection` 与六槽 SkillBar 解耦。
 
 ### 实现摘要
 
-- 为 Input System 增加 `Tab` Action 和 `<Keyboard>/tab` 绑定，并重新生成 `New Actions.cs`。
-- 新增 `TabPageToggleController`，在常驻 UI Canvas 上监听 Tab，控制 `TabPag` 并在打开时选择 `Character`。
-- 新增顶部页签 Item、View、Group 及页面 Group、Item，支持六类页面的选中状态和显隐切换。
-- 新增 `Tab_Btn` Prefab、顶部栏资源，并在训练场搭建顶部栏与技能页面视觉节点。
-- 技能页面新增技能点、重置按钮、图例和操作说明视觉资源。
+- 新增 `PlayerSkillProgression`，管理技能点、节点等级、前置、互斥、购买、重置和变化事件。
+- 新增技能树、升级节点、数值修改器和结构修改器 ScriptableObject 配置类型。
+- 新增 `SkillBuildSnapshot`，让耗蓝、冷却、范围、伤害、治疗、投递、目标解析和表现读取升级后的有效配置。
+- `PlayerSkillCollection` 支持动态注册/移除；`PlayerSkillController` 支持动态被动技能启停，不再从 SkillBar 创建 Collection。
+- 新增 `CharacterStatsRuntime` 与 Buff 定义、实例、控制器、叠层、永久/限时、周期伤害/治疗和技能施加效果。
+- 新增 `CharacterSaveData / SkillProgressSaveData`，并在 `PlayerManager` 提供角色 JSON 导入导出和技能点发放入口。
+- 新增技能点/重置与升级节点的通用 UI 绑定脚本，场景引用仍待配置。
 
 ### 关键修改文件
 
-- `Assets/New Actions.inputactions`
-- `Assets/New Actions.cs`
-- `Assets/Scripts/UI/TabPageToggleController.cs`
-- `Assets/Scripts/UI/TopBar/`
-- `Assets/Scripts/UI/TopBarPageGroup.cs`
-- `Assets/Scripts/UI/TopBarPageItem.cs`
-- `Assets/Prefab/UI/Tab_Btn.prefab`
-- `Assets/Scenes/TrainingGround.unity`
-- `Assets/Resources/UI/TopBar/`
-- `Assets/Resources/UI/SkillSystem/SkillTreePanel/`
+- `Assets/Scripts/Skills/Progression/`
+- `Assets/Scripts/Buffs/`
+- `Assets/Scripts/Stats/CharacterStatsRuntime.cs`
+- `Assets/Scripts/Skills/Runtime/PlayerSkillCollection.cs`
+- `Assets/Scripts/Skills/Runtime/PlayerSkillController.cs`
+- `Assets/Scripts/Player/PlayerManager.cs`
+- `Assets/Scripts/Skills/Effects/ApplyBuffSkillEffect.cs`
+- `Assets/Scripts/UI/SkillTree/`
+- `Docs/Decisions/ADR-002-SKILL-PROGRESSION-AND-BUFFS.md`
 
 ### 验证状态
 
-- [x] 静态确认 Tab Action、场景组件与序列化引用存在且对应正确。
-- [x] 静态确认打开逻辑固定选择 `TopBarPage.Character`。
-- [ ] Unity C# 编译确认。
-- [ ] Unity Play Mode 验证 Tab 开关、默认角色页和六页签点击。
-- [ ] 检查 Console 无新增异常。
+- [x] 静态确认 ScriptableObject 与运行时状态保持分离。
+- [x] 静态确认 SkillBar 只允许装备 Collection 已拥有技能。
+- [x] 当前 Unity Editor 日志确认 `Tundra build success` 且程序集成功重载。
+- [ ] 创建实际 SkillTree、Node、Modifier 和 Buff 配置资产。
+- [ ] Unity Play Mode 验证技能点购买/重置、分支互斥、数值升级、形态替换、Buff 和 JSON 往返。
 
 ### Git 信息
 
@@ -483,14 +476,29 @@ Commit: 未提交
 
 ### 已知限制
 
-- `CharacterPage` 尚未创建，选择角色页时内容区域为空。
-- 当前只有 `SkillPage` 视觉内容，其他页面尚未实现。
-- 技能点数、重置按钮、解锁、升级和拖拽装配均未接入运行时逻辑。
-- `Tab_Btn.prefab` 中 `TopBarTabView` 的三个引用仍为空；训练场六个实例均通过 Override 补齐，但直接复用基础 Prefab 可能产生空引用。
+- 本次只建立通用运行时代码，尚未制作具体技能树、升级节点和 Buff 资产。
+- 技能页面现有技能点文本、节点和重置按钮尚未绑定运行时接口。
+- 临时 Buff 默认不写入角色 JSON；正式文件存取服务尚未实现，目前提供 JSON 字符串导入导出入口。
+- 生命上限、法力上限、护盾、驱散和完整控制状态尚未接入运行时属性/战斗流程。
+- `TrainingGround.unity` 当前存在开发者同时进行的 UI 布局改动，本任务未覆盖或回退这些改动。
 
 ---
 
 # 历史任务
+
+## Task
+
+**ID:** ARPG-20260921-01
+**Status:** REVIEW
+**Title:** Tab 多页面界面与技能页面视觉基础
+
+### 摘要
+
+- 已提交 `Tab` Action、`TabPag` 显隐、顶部六页签和技能页面视觉基础。
+- Git：`main` / `3ec40c2`。
+- 静态引用已确认；Unity Play Mode 验证仍待开发者完成。
+
+---
 
 ## Task
 

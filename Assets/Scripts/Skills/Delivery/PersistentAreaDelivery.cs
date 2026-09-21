@@ -15,7 +15,10 @@ public sealed class PersistentAreaDelivery : SkillDelivery
     public override ISkillDeliveryHandle Deliver(
         SkillCastContext context)
     {
-        if (targetResolver == null)
+        SkillTargetResolver resolver =
+            context.Build.TargetResolverOverride ?? targetResolver;
+
+        if (resolver == null)
         {
             Debug.LogWarning(
                 $"技能 {context.Definition.DisplayName} 没有配置范围目标解析器。",
@@ -27,12 +30,18 @@ public sealed class PersistentAreaDelivery : SkillDelivery
             $"{context.Definition.DisplayName}_AreaEmitter");
 
         var emitter = emitterObject.AddComponent<SkillAreaEmitter>();
+        float effectiveDuration = context.Build.GetNumeric(
+            SkillNumericStat.AreaDuration,
+            duration);
+        float effectiveTickInterval = context.Build.GetNumeric(
+            SkillNumericStat.TickInterval,
+            tickInterval);
         emitter.Initialize(
             context,
-            targetResolver,
+            resolver,
             lifetimeMode,
-            duration,
-            tickInterval,
+            effectiveDuration,
+            effectiveTickInterval,
             applyImmediately,
             followCaster);
 

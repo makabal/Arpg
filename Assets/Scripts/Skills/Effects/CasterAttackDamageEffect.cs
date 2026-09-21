@@ -11,9 +11,16 @@ public sealed class CasterAttackDamageEffect : SkillEffect
     public override void Apply(SkillHitContext context)
     {
         int attackDamage = context.Cast.AttackDamageSnapshot;
+        float effectiveMultiplier = context.Cast.Build.GetNumeric(
+            SkillNumericStat.AttackMultiplier,
+            attackMultiplier);
+        int effectiveFlatBonus = context.Cast.Build.GetInt(
+            SkillNumericStat.FlatDamage,
+            flatBonus);
         int finalDamage = Mathf.Max(
             0,
-            Mathf.RoundToInt(attackDamage * attackMultiplier) + flatBonus);
+            Mathf.RoundToInt(attackDamage * effectiveMultiplier) +
+                effectiveFlatBonus);
 
         foreach (SkillTarget target in context.Targets)
             target.Damageable?.TakeDamage(finalDamage);

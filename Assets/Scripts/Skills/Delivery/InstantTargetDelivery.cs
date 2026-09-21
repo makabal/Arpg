@@ -11,13 +11,16 @@ public sealed class InstantTargetDelivery : SkillDelivery
     public override ISkillDeliveryHandle Deliver(
         SkillCastContext context)
     {
-        if (targetResolver == null)
+        SkillTargetResolver resolver =
+            context.Build.TargetResolverOverride ?? targetResolver;
+
+        if (resolver == null)
             return null;
 
         var targets = new List<SkillTarget>();
         var request = new SkillTargetRequest(context);
 
-        if (targetResolver.Resolve(request, targets) !=
+        if (resolver.Resolve(request, targets) !=
             SkillUseFailure.None)
         {
             return null;

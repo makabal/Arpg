@@ -9,7 +9,11 @@ public sealed class HealSkillEffect : SkillEffect
 
     public override void Apply(SkillHitContext context)
     {
+        int finalAmount = context.Cast.Build.GetInt(
+            SkillNumericStat.Healing,
+            amount);
+
         foreach (SkillTarget target in context.Targets)
-            target.Health?.Restore(amount);
+            target.Health?.Restore(finalAmount);
     }
 }

@@ -9,7 +9,11 @@ public sealed class DamageSkillEffect : SkillEffect
 
     public override void Apply(SkillHitContext context)
     {
+        int finalDamage = context.Cast.Build.GetInt(
+            SkillNumericStat.Damage,
+            damage);
+
         foreach (SkillTarget target in context.Targets)
-            target.Damageable?.TakeDamage(damage);
+            target.Damageable?.TakeDamage(finalDamage);
     }
 }

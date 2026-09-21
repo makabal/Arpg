@@ -87,6 +87,8 @@ public enum SkillUseFailure
     NotEquipped,
     PassiveSkill,
     PlayerDead,
+    CrowdControlled,
+    Silenced,
     Busy,
     OnCooldown,
     NotEnoughMana,
