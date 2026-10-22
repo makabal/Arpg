@@ -16,12 +16,19 @@
 
 ## 目录职责
 
-- `Assets/Art/`：制作源图、参考图、候选资源。
-- `Assets/Resources/`：当前仍由 Resources 使用的运行时资源。
-- `Assets/Data/`：ScriptableObject 配置。
-- `Assets/Scripts/`：运行时代码。
-- `Assets/Prefab/`：Prefab。
+- `Assets/GameScript/Runtime/GameLogic/`：角色、技能、Buff、UI、输入等现有玩法代码。
+- `Assets/GameScript/Editor/`：项目自己的编辑器工具。
+- `Assets/GameRes/`：运行资源，按 YooAsset 官方 Space Shooter 的目录职责分类。
+- `Assets/GameRes/Config/`：ScriptableObject 配置。
+- `Assets/GameRes/Entity/`、`UIPanel/`、`Scene/`：角色 Prefab、UI Prefab 和游戏场景等加载入口。
+- `Assets/GameRes/EntityArt/`、`UIPanelArt/`、`SceneArt/`：运行依赖的图片、动画、材质和地图资源；不是制作参考稿。
+- `Assets/GameSetting/`：YooAsset 采集等项目资源配置。
+- `Assets/ArtSource/`：制作源图、参考图和候选资源，不作为常规运行资源采集根目录。
+- `Assets/Resources/`：仅在实际需要时保留更新前必须使用的 Resources 资源；不为目录示例建立空壳资源。
+- `Assets/Settings/`：Unity、URP 等项目设置；第三方插件自己的资源保留原有结构。
 - `Docs/`：仓库级流程、规范和架构决策，不放进 Assets。
+
+目录分类不等于已完成 YooAsset 接管。Package、Collector、构建规则、运行时初始化与加载需分别实现和验证。新增 Boot、Framework、PatchLogic 或热更新程序集时，应按实际功能需求建立，不仅为凑齐示例目录创建空实现。
 
 ## 架构约束
 

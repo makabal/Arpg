@@ -27,6 +27,7 @@
 - `FEATURE_DEVELOPMENT.md`：功能从需求讨论到验收的完整流程。
 - `GIT_WORKFLOW.md`：Git 提交、拉取、推送和提交边界。
 - `UNITY_VALIDATION.md`：Unity 功能完成后的验证清单。
+- `YOOASSET_LEARNING_PLAN.md`：结合本项目的 YooAsset 分阶段学习计划、第一课操作与验收标准。
 
 ### Standards
 
@@ -35,5 +36,6 @@
 
 ### Decisions
 
+- `ADR-003-YOOASSET-PROJECT-LAYOUT.md`：对齐 YooAsset 官方示例的代码、运行资源、配置与源稿目录职责。
 - `ADR-001-SKILL-COLLECTION-AND-HOTBAR.md`：PlayerSkillCollection 与六槽 SkillBar 的职责划分。
 - `ADR-002-SKILL-PROGRESSION-AND-BUFFS.md`：技能点、升级分支、有效技能构建与 Buff 的职责划分。

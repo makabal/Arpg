@@ -4,6 +4,8 @@
 
 ## 当前阶段
 
+已新增《青林物语》开始界面，启动场景为 `Assets/GameRes/Scene/StartMenu.unity`。包含独立像素字体按钮、设置面板、训练场跳转，以及落叶、光斑、光束、背景缓移和骑士待机。实现与验证记录见 `Docs/Features/START_MENU.md`。
+
 我已经完成训练场的基础战斗闭环，包括玩家移动、普通攻击、目标选择、角色 HUD、组合式技能框架，以及六槽技能栏的第一版运行时接入。技能栏职责清理已经完成验收；当前继续验收“剑刃风暴”，并搭建多页面角色界面和技能树页面的视觉、顶部页签与基础显隐逻辑，为后续角色页、技能点和拖拽装配做准备。
 
 当前开发环境：
@@ -13,7 +15,7 @@
 - Input System 1.14.2
 - TextMesh Pro 3.0.7
 - YooAsset 3.0.5
-- 当前测试场景：`Assets/Scenes/TrainingGround.unity`
+- 当前测试场景：`Assets/GameRes/Scene/TrainingGround.unity`
 
 当前操作：
 
@@ -57,7 +59,7 @@
 - 优先通过数据和模块组合功能，避免把具体技能写死在角色代码中。
 - ScriptableObject 只保存静态配置，当局状态由运行时对象管理。
 - 美术制作前先确认主画风和人物原型，避免后续资源风格漂移。
-- 制作过程与参考资源放在 `Assets/Art`，运行时资源放在 `Assets/Resources`。
+- 制作过程与参考资源放在 `Assets/ArtSource`，运行时资源按官方示例分类放在 `Assets/GameRes`。
 - 功能完成后检查 C# 编译、Unity Console、资源引用和实际运行效果。
 
 ## 功能板块
@@ -138,7 +140,7 @@
 | `BuffController` | 管理角色当前 Buff、持续时间和叠层 |
 | `PlayerSkillController` | 管理技能生命周期、冷却和资源消耗 |
 
-技能脚本位于 `Assets/Scripts/Skills`，技能配置位于 `Assets/Data/Skills`。
+技能脚本位于 `Assets/GameScript/Runtime/GameLogic/Skills`，技能配置位于 `Assets/GameRes/Config/Skills`。
 
 #### 新增技能流程
 
@@ -201,6 +203,7 @@
 - [完成] 为普通攻击配置技能栏图标
 - [已接入，待验收] `Tab` 键切换 `TabPag` 显隐，打开时默认选择角色页
 - [已接入，待验收] 顶部六页签的选中表现和页面切换基础逻辑
+- [已接入，待运行验收] 以 1920×1080 为基准等比缩放 UI，调整顶部目标血条、底部技能栏和面板锚点；六种分辨率静态布局检查通过
 - [进行中] 技能页面视觉结构，包括技能点、重置按钮、图例和操作说明
 - [未开始] 角色页面内容；当前默认选择角色页时内容区域为空
 - [已接入，待 UI] 技能点、等级、分支和解锁运行时领域逻辑
@@ -212,12 +215,13 @@
 - `EnemyTargetHud`：当前目标显示
 - `TabPageToggleController`：监听 `Tab` 并切换 `TabPag`，打开时选择默认角色页
 - `TopBarTabGroup` / `TopBarPageGroup`：顶部页签状态与页面显隐
-- `Assets/Resources/UI/SkillSystem`：技能栏与世界指示器运行资源
-- `Assets/Resources/UI/TopBar`：顶部栏运行资源
-- `Assets/Art/UI`：UI 概念稿和制作资源
+- `Assets/GameRes/UIPanelArt/SkillSystem`、`Assets/GameRes/UISprite/SkillSystem`：技能面板、技能栏与图标运行资源
+- `Assets/GameRes/UIPanelArt/TopBar`：顶部栏运行资源
+- `Assets/ArtSource/UI`：UI 概念稿和制作资源
 
 #### 下一步
 
+- 在 Unity Game View 切换 16:9、16:10、21:9 和 4:3，检查 HUD、技能页面、文字清晰度与点击位置。
 - 在 Unity Play Mode 验证 `TabPag` 开关、默认角色页和顶部页签切换。
 - 创建角色页面内容；当前只完成默认选择逻辑。
 - 继续搭建独立技能树界面；当前技能点、重置按钮等仍是视觉初稿。
@@ -241,7 +245,7 @@
 
 #### 关键代码与资源
 
-- `Assets/Scenes/TrainingGround.unity`
+- `Assets/GameRes/Scene/TrainingGround.unity`
 - `YSortRenderer`：根据脚底世界坐标计算排序层级
 - `SortPoint`：角色实际脚底参考点
 
@@ -268,11 +272,11 @@
 
 #### 资源规范
 
-- 主画风：`Assets/Art/References/GameArtStyle_MasterReference.png`
-- 人物原型：`Assets/Art/References/Characters/Warrior_Black_MasterPrototype.png`
+- 主画风：`Assets/ArtSource/References/GameArtStyle_MasterReference.png`
+- 人物原型：`Assets/ArtSource/References/Characters/Warrior_Black_MasterPrototype.png`
 - 战士技能动画默认使用 192×192、透明 PNG、角色与特效合并帧。
 - Unity 图片使用 Point Filter、关闭 Mip Maps、关闭压缩并保留 Alpha。
-- 制作源图和备选方案保存在 `Assets/Art`，确认后的运行资源放入 `Assets/Resources`。
+- 制作源图和备选方案保存在 `Assets/ArtSource`，确认后的运行资源放入 `Assets/GameRes`。
 
 #### 下一步
 
@@ -303,7 +307,7 @@
 - `SkillRuntime`：角色独立的技能冷却状态
 - `CharacterSaveData` / `SkillProgressSaveData`：角色 JSON 技能成长数据
 - `Health`、`ResourcePool`：当局生命与法力
-- `Assets/BundleCollectorSetting.asset`：YooAsset 收集配置入口
+- `Assets/GameSetting/BundleCollectorSetting.asset`：YooAsset 收集配置入口
 
 #### 下一步
 
@@ -322,6 +326,19 @@
 - [ ] 完成训练场碰撞与相机边界
 
 ## 最近开发记录
+
+### 2026-10-22
+
+- 完成开始场景、紧凑的细木框字体按钮与森林动态效果。
+- 配置 StartMenu → TrainingGround 流程，Unity 编译与主要 Play Mode 路径验证通过。
+- 经授权安装 CoplayDev Unity MCP 10.1.2；本地包随项目保存。
+- 将此前目录迁移与本次首页一起同步，保持场景、字体与角色资源引用完整。
+
+### 2026-10-21
+
+- 训练场 Canvas 改为 `Scale With Screen Size`，参考分辨率 1920×1080，使用 `Expand` 保持比例。
+- 调整目标血条、技能栏、Tab 面板与顶部页签的锚点，保留现有美术与资源引用。
+- 720p、1080p、16:10、超宽屏、4:3 和 4K 静态布局检查通过；实际显示和交互待 Unity 验收。
 
 ### 2026-09-21
 

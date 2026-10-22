@@ -11,6 +11,9 @@
 
 当前已经具备：
 
+- 《青林物语》独立 StartMenu 首场景：木牌像素标题、Fusion Pixel 文字按钮、设置/退出、训练场跳转、飘叶/光斑/光束/骑士待机。2026-10-22 已完成 Unity 编译与主要 Play Mode 路径验证，待开发者视觉验收；说明见 `Docs/Features/START_MENU.md`。
+- CoplayDev Unity MCP 10.1.2 已安装，stdio 编辑器连接已验证。
+
 - WASD 移动。
 - 普通攻击。
 - 目标选择。
@@ -34,7 +37,7 @@
 - TextMesh Pro：`3.0.7`
 - Cinemachine：`2.10.7`
 - YooAsset：`3.0.5`
-- 当前主要场景：`Assets/Scenes/TrainingGround.unity`
+- 当前主要场景：`Assets/GameRes/Scene/TrainingGround.unity`
 
 当前仍以 Unity 默认程序集为主，尚未建立完整自定义 Assembly Definition 体系。
 
@@ -156,22 +159,24 @@ SkillSlotView
 
 主要代码：
 
-- `Assets/Scripts/UI/SkillBar/SkillSlotView.cs`
-- `Assets/Scripts/UI/SkillBar/SkillSlotButton.cs`
-- `Assets/Scripts/UI/TabPageToggleController.cs`
-- `Assets/Scripts/UI/TopBar/TopBarTabGroup.cs`
-- `Assets/Scripts/UI/TopBar/TopBarTabView.cs`
-- `Assets/Scripts/UI/TopBarPageGroup.cs`
+- `Assets/GameScript/Runtime/GameLogic/UI/SkillBar/SkillSlotView.cs`
+- `Assets/GameScript/Runtime/GameLogic/UI/SkillBar/SkillSlotButton.cs`
+- `Assets/GameScript/Runtime/GameLogic/UI/TabPageToggleController.cs`
+- `Assets/GameScript/Runtime/GameLogic/UI/TopBar/TopBarTabGroup.cs`
+- `Assets/GameScript/Runtime/GameLogic/UI/TopBar/TopBarTabView.cs`
+- `Assets/GameScript/Runtime/GameLogic/UI/TopBarPageGroup.cs`
 
 主要 Prefab：
 
-- `Assets/Prefab/UI/SkillBar/SkillSlot.prefab`
+- `Assets/GameRes/UIPanel/SkillBar/SkillSlot.prefab`
 
 “技能栏职责清理”（ARPG-20260920-01）已完成验收（ACCEPTED）：SkillBar / SkillSlotView 只负责当前装备技能的图标、空槽、冷却、快捷键和输入；技能解锁、允许装备与锁定展示不再属于技能栏运行时链路。技能解锁最终归属未来技能界面 / 技能树。
 
 技能界面当前加入了视觉参考、背景资源和 `TrainingGround` 中的 `TabPag / PageBox / SkillPage` 场景节点。技能点、升级分支和重置的运行时领域代码已经建立，但尚未创建实际技能树配置资产，也未把节点按钮、技能点文本和重置按钮绑定到运行时接口。
 
-多页面界面当前行为：`TabPageToggleController` 只切换 `TabPag`；打开时由顶部页签组选择 `Character`。`TopBar` 是 `TabPag` 的兄弟节点，不随 `TabPag` 一起隐藏。场景目前只有 `SkillPage` 视觉内容，没有 `CharacterPage`，因此默认角色页内容为空。本批页签、输入和场景变更尚未完成 Unity 编译与 Play Mode 验收。
+多页面界面当前行为：`TabPageToggleController` 切换 `TabPag`；打开时由顶部页签组选择 `Character`。当前场景中 `TopBar` 是 `TabPag` 的子节点，随其一起显隐。场景目前只有 `SkillPage` 视觉内容，没有 `CharacterPage`，因此默认角色页内容为空。页签与输入行为仍待 Play Mode 验收。
+
+训练场 UI 使用 `CanvasScaler / Scale With Screen Size`，参考分辨率为 `1920×1080`，匹配模式为 `Expand`。玩家 HUD 保持左上定位，目标血条锚定顶部，技能栏锚定底部，`TabPag` 铺满画布，顶部页签锚定顶部。已通过 720p、1080p、16:10、超宽屏、4:3 和 4K 的静态布局检查；实际渲染、文字清晰度及交互仍待 Unity Game View / Play Mode 验收。尚未实现分辨率或窗口模式设置。
 
 ## 6. 当前技能
 
@@ -216,12 +221,14 @@ SkillSlotView
 - ScriptableObject：静态配置。
 - Runtime 对象 / 运行时组件：当前局变化数据。
 - `CharacterSaveData / SkillProgressSaveData`：角色 JSON 中的技能点和节点等级 DTO。
-- `Assets/Art/`：制作源图、参考图、候选资源。
-- `Assets/Resources/`：当前仍使用 Resources 的运行时资源。
-- `Assets/Data/`：ScriptableObject 配置。
+- `Assets/ArtSource/`：制作源图、参考图、候选资源。
+- `Assets/GameRes/`：运行资源，按 Entity / EntityArt / Scene / SceneArt / UIPanel / UIPanelArt / UIFont 等职责分类。
+- `Assets/GameScript/`：项目运行时代码和编辑器工具。
+- `Assets/GameSetting/`：YooAsset 采集等资源配置。
+- `Assets/GameRes/Config/`：ScriptableObject 配置。
 - `Docs/`：项目长期流程、规范和架构决策。
 
-YooAsset 已安装，但正式运行时资源加载流程尚未完整接管 Resources。
+2026-10-20 已按 YooAsset 3.0.5 官方 Space Shooter 风格完成目录整理；2026-10-22 新增 StartMenu 作为首场景，点击开始游戏进入 TrainingGround，保留 Unity 默认程序集。YooAsset 的 Package / Collector、运行时初始化和加载流程尚未实现；本批未新增 Boot、资源管理器或 HybridCLR。目录决策见 `Docs/Decisions/ADR-003-YOOASSET-PROJECT-LAYOUT.md`。
 
 ## 9. 当前主要未完成内容
 
@@ -309,6 +316,11 @@ README
 `Docs/Workflows/AI_COLLABORATION.md`
 
 ## 13. 最近同步记录
+
+- 2026-10-22：完成《青林物语》StartMenu、独立 Fusion Pixel 字体按钮、细木框与紧凑布局、飘叶/光斑/光束/背景缓移及骑士待机；安装并验证 MCP 10.1.2 连接。Unity 编译、设置/音量和进入训练场已通过 Play Mode 验证。用户明确同意将此前目录迁移与首页一起同步，并采用先提交、再拉取变基、最后推送的顺序；提交详情见 Git 历史。
+
+- 2026-10-21：完成训练场现有 UI 的 Canvas 缩放与 HUD 锚点调整；六种分辨率静态检查通过，实际显示与交互待 Unity 验收，见 ARPG-20261021-01。
+- 2026-10-20：按开发者确认迁移为 GameScript / GameRes / GameSetting / ArtSource，保留原 GUID、训练场现有修改和玩法行为；验证结果见 ARPG-20261020-01。
 
 - 2026-09-21：新增技能点与升级分支运行时基础、有效技能构建快照、动态技能集合、角色 JSON 技能进度 DTO，以及通用 Buff/运行时属性链路；Unity C# 编译已通过，配置资产和 Play Mode 行为仍待验收。
 - 2026-09-21：将项目 Git 规则统一为根目录下依次执行 `status → pull --rebase origin main → add . → commit → push origin main`；失败时停止并报告，不自行增加额外 Git 操作。
